@@ -103,13 +103,12 @@ std::shared_ptr<Node> create_node(const Token &token)
         {
             node->set_attribute(name, value);
 
-            // if(name == "style"){
-            //     auto styles = parse_inline_style(value);
-            //     for(auto &style:styles){
-            //         auto style_pair = split(style,':');
-            //         node->set_style(style_pair[0], style_pair[1]);
-            //     }
-            // }
+            if(name == "style"){
+                auto styles = parse_inline_style(value);
+                for(auto &[name, value]:styles){
+                    node->set_style(name, value);
+                }
+            }
         }
     }
     return node;

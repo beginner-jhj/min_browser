@@ -15,13 +15,6 @@ std::vector<std::string> &split(std::string &s, const char delimiter)
     return result;
 }
 
-void remove_all_space(std::string &str)
-{
-    if (str.empty())
-        return;
-    str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
-}
-
 void skip_space(size_t &pos, const std::string &str)
 {
     while (pos < str.size() && str[pos] == ' ')

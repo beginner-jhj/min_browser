@@ -5,7 +5,6 @@
 #include <algorithm>
 
 std::vector<std::string>& split(std::string& s,const char delimiter);
-void remove_all_space(std::string& str);
 void skip_space(size_t&pos, const std::string& str);
 void skip_space(size_t&pos, std::string_view str);
 void ltrim(std::string& s);
