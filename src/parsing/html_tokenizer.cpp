@@ -1,4 +1,5 @@
 #include "html_tokenizer.h"
+#include "util_functions.h"
 
 std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
 {
@@ -6,10 +7,11 @@ std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
     size_t pos = 0;
     while (pos < to_parse.size())
     {
-        while (pos < to_parse.size() && to_parse[pos] == ' ')
-        {
-            pos++;
-        }
+        // while (pos < to_parse.size() && to_parse[pos] == ' ')
+        // {
+        //     pos++;
+        // }
+        skip_space(pos, to_parse);
 
         size_t equal_sign_pos = to_parse.find("=", pos);
 
@@ -17,10 +19,7 @@ std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
 
         pos = equal_sign_pos+1;
 
-        while (pos < to_parse.size() && to_parse[pos] == ' ')
-        {
-            pos++;
-        }
+        skip_space(pos,to_parse);
 
         std::string attribute_value{};
         if (to_parse[pos] == '"' || to_parse[pos] == '\'')

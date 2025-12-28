@@ -81,3 +81,9 @@ std::string Node::get_attribute(const std::string &name) const
         return "";
     }
 }
+
+void Node::set_style(const std::string& name, const std::string& value){
+    if(!name.empty() && !value.empty()){
+        m_styles[name] = value;
+    }
+}

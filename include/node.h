@@ -20,6 +20,7 @@ class Node{
 
         std::vector<std::shared_ptr<Node>> m_children;
         std::map<std::string, std::string> m_attributes;
+        std::map<std::string, std::string> m_styles;
 
 
     public:
@@ -28,6 +29,9 @@ class Node{
         void add_child(std::shared_ptr<Node> child);
         void set_attribute(const std::string& name, const std::string& value);
         std::string get_attribute(const std::string& name) const;
+
+        void set_style(const std::string& name, const std::string& value);
+
 
         const std::string get_tag_name() const;
         const std::string get_text_content() const;

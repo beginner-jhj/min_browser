@@ -16,6 +16,8 @@ add_library(parsing_lib
     src/parsing/html_tokenizer.cpp
     src/parsing/html_parser.cpp
     src/parsing/node.cpp
+    src/parsing/css_parser.cpp
+    src/util_functions.cpp
 )
 
 target_include_directories(parsing_lib PUBLIC 
