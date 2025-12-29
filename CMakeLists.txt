@@ -13,10 +13,11 @@ src/main.cpp)
 
 # Library: parsing logic
 add_library(parsing_lib
-    src/parsing/html_tokenizer.cpp
-    src/parsing/html_parser.cpp
-    src/parsing/node.cpp
-    src/parsing/css_parser.cpp
+    src/html/html_tokenizer.cpp
+    src/html/html_parser.cpp
+    src/html/node.cpp
+    src/css/css_parser.cpp
+    src/styling/style_applier.cpp
     src/util_functions.cpp
 )
 

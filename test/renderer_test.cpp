@@ -1,8 +1,8 @@
 #include <iostream>
 #include <QApplication>
 #include "browser_widget.h"
-#include "html_parser.h"
-#include "html_tokenizer.h"
+#include "html/html_parser.h"
+#include "html/html_tokenizer.h"
 
 int main(int argc, char *argv[])
 {

@@ -4,7 +4,7 @@
 #include <QPaintEvent>
 #include <memory>
 #include <utility>
-#include "node.h"
+#include "html/node.h"
 
 class BrowserWidget : public QWidget
 {
@@ -19,7 +19,7 @@ private:
 
     // Returns next Y position after drawing
     std::pair<int, int> draw_node(QPainter &painter, std::shared_ptr<Node> node, int x, int y);
-    void apply_element_style(QPainter &painter, const std::string &tag);
+    void apply_element_style(QPainter &painter, std::shared_ptr<Node> node);
     void reset_style(QPainter &painter);
 
 protected:

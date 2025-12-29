@@ -1,6 +1,6 @@
 #include "util_functions.h"
 
-std::vector<std::string> &split(std::string &s, const char delimiter)
+std::vector<std::string> split(std::string &s, const char delimiter)
 {
     std::vector<std::string> result;
 

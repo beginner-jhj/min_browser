@@ -1,4 +1,4 @@
-#include "node.h"
+#include "html/node.h"
 
 Node::Node(NODE_TYPE t, const std::string &content) : m_type(t)
 {
@@ -82,8 +82,20 @@ std::string Node::get_attribute(const std::string &name) const
     }
 }
 
-void Node::set_style(const std::string& name, const std::string& value){
-    if(!name.empty() && !value.empty()){
+void Node::set_style(const std::string &name, const std::string &value)
+{
+    if (!name.empty() && !value.empty())
+    {
         m_styles[name] = value;
     }
+}
+
+std::string Node::get_style(const std::string &property) const
+{
+    auto it = m_styles.find(property);
+    return it == m_styles.end() ? "" : it->second;
+}
+
+const std::map<std::string, std::string> Node::get_all_styles() const {
+    return m_styles;
 }

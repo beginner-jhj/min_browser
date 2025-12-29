@@ -31,7 +31,8 @@ class Node{
         std::string get_attribute(const std::string& name) const;
 
         void set_style(const std::string& name, const std::string& value);
-
+        std::string get_style(const std::string& property) const;
+        const std::map<std::string, std::string> get_all_styles() const;
 
         const std::string get_tag_name() const;
         const std::string get_text_content() const;

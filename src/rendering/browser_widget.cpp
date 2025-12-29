@@ -65,7 +65,7 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
 
                 QFont font = painter.font();
 
-                apply_element_style(painter, tag);
+                apply_element_style(painter, child);
 
                 int child_x = x;
 
@@ -89,7 +89,7 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
             }
             else
             {
-                apply_element_style(painter, tag);
+                apply_element_style(painter, child);
 
                 auto [new_x, new_y] = draw_node(painter, child, current_x, current_y);
                 current_x = new_x;
@@ -102,9 +102,10 @@ std::pair<int, int> BrowserWidget::draw_node(QPainter &painter, std::shared_ptr<
     return {current_x, current_y};
 }
 
-void BrowserWidget::apply_element_style(QPainter &painter, const std::string &tag)
+void BrowserWidget::apply_element_style(QPainter &painter, std::shared_ptr<Node> node)
 {
     QFont font = painter.font();
+    std::string tag = node->get_tag_name();
 
     if (tag == "h1")
     {

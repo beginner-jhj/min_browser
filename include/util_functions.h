@@ -4,7 +4,7 @@
 #include <sstream>
 #include <algorithm>
 
-std::vector<std::string>& split(std::string& s,const char delimiter);
+std::vector<std::string> split(std::string& s,const char delimiter);
 void skip_space(size_t&pos, const std::string& str);
 void skip_space(size_t&pos, std::string_view str);
 void ltrim(std::string& s);

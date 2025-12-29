@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
-#include "html_parser.h"
-#include "html_tokenizer.h"
+#include "html/html_parser.h"
+#include "html/html_tokenizer.h"
 
 int main()
 {
