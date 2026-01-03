@@ -3,13 +3,15 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <QRectF>
+#include "css/computed_style.h"
 
 enum class NODE_TYPE{
     ELEMENT,TEXT
 };
 
 enum class DISPLAY_TYPE{
-    BLOCK, INLINE
+    BLOCK, INLINE, NONE
 };
 
 class Node{
@@ -20,7 +22,8 @@ class Node{
 
         std::vector<std::shared_ptr<Node>> m_children;
         std::map<std::string, std::string> m_attributes;
-        std::map<std::string, std::string> m_styles;
+        QRectF m_rect;
+        ComputedStyle m_computed_style;
 
 
     public:
@@ -32,7 +35,9 @@ class Node{
 
         void set_style(const std::string& name, const std::string& value);
         std::string get_style(const std::string& property) const;
-        const std::map<std::string, std::string> get_all_styles() const;
+        ComputedStyle get_all_styles() const;
+
+        void set_rect(float x, float y, float width, float height);
 
         const std::string get_tag_name() const;
         const std::string get_text_content() const;

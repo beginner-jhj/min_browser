@@ -38,13 +38,15 @@ int main()
     std::cout << "Test 2 PASSED" << std::endl;
 
     std::string html3 = "<a href=\"https://example.com\">link</a>";
-    auto tokens = tokenize(html3);
-    auto tree3 = parse(tokens);
+    auto tokens3 = tokenize(html3);
+    auto tree3 = parse(tokens3);
 
-    for(const auto& token:tokens){
+    for (const auto &token : tokens3)
+    {
         std::cout << static_cast<int>(token.type) << "Value: " << token.value << std::endl;
-        for(const auto& [name, value]:token.attributes){
-            std::cout << "Name: "<<name << "," <<"Value: "<< value << std::endl;
+        for (const auto &[name, value] : token.attributes)
+        {
+            std::cout << "Name: " << name << "," << "Value: " << value << std::endl;
         }
     }
 
@@ -55,6 +57,21 @@ int main()
     }
 
     std::cout << "Test 3 PASSED" << std::endl;
+
+    std::string html = "<style>ABC</style>";
+    auto tokens = tokenize(html);
+    auto tree = parse(tokens);
+
+    // DOM 확인
+    std::cout << "Root: " << tree->get_tag_name() << std::endl;
+    std::cout << "Children: " << tree->get_children().size() << std::endl;
+
+    if (tree->get_children().size() > 0)
+    {
+        auto child = tree->get_children()[0];
+        std::cout << "First child type: " << (int)child->get_type() << std::endl;
+        std::cout << "First child text: [" << child->get_text_content() << "]" << std::endl;
+    }
 
     std::cout << "All tests PASSED!" << std::endl;
     return 0; // 성공

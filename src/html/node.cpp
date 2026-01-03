@@ -84,18 +84,25 @@ std::string Node::get_attribute(const std::string &name) const
 
 void Node::set_style(const std::string &name, const std::string &value)
 {
-    if (!name.empty() && !value.empty())
+    if (m_computed_style.setters.count(name))
     {
-        m_styles[name] = value;
+        m_computed_style.setters[name](m_computed_style, value);
     }
 }
 
 std::string Node::get_style(const std::string &property) const
 {
-    auto it = m_styles.find(property);
-    return it == m_styles.end() ? "" : it->second;
 }
 
-const std::map<std::string, std::string> Node::get_all_styles() const {
-    return m_styles;
+ComputedStyle Node::get_all_styles() const
+{
+    return m_computed_style;
+}
+
+void Node::set_rect(float x, float y, float width, float height)
+{
+    m_rect.setX(x);
+    m_rect.setY(y);
+    m_rect.setWidth(width);
+    m_rect.setHeight(height);
 }

@@ -7,32 +7,21 @@ std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
     size_t pos = 0;
     while (pos < to_parse.size())
     {
-        // while (pos < to_parse.size() && to_parse[pos] == ' ')
-        // {
-        //     pos++;
-        // }
         skip_space(pos, to_parse);
 
         size_t equal_sign_pos = to_parse.find("=", pos);
 
         std::string attribute_name = to_parse.substr(pos, equal_sign_pos - pos);
 
-        pos = equal_sign_pos+1;
+        pos = equal_sign_pos + 1;
 
-        skip_space(pos,to_parse);
+        skip_space(pos, to_parse);
 
-        std::string attribute_value{};
-        if (to_parse[pos] == '"' || to_parse[pos] == '\'')
-        {
-            char quote = to_parse[pos];
-            pos++;
-            size_t closing_quote_pos = to_parse.find(quote,pos);
-            attribute_value = to_parse.substr(pos, closing_quote_pos - pos);
-            pos = closing_quote_pos + 1;
-        }
-        else
-        {
-        }
+        char quote = to_parse[pos];
+        pos++;
+        size_t closing_quote_pos = to_parse.find(quote, pos);
+        std::string attribute_value = to_parse.substr(pos, closing_quote_pos - pos);
+        pos = closing_quote_pos + 1;
 
         if (!attribute_value.empty())
         {

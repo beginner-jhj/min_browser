@@ -2,6 +2,7 @@
 #include "util_functions.h"
 #include <iostream>
 #include <cctype>
+#include <queue>
 
 std::unordered_map<std::string, std::string> parse_inline_style(std::string_view style_string)
 {
@@ -71,5 +72,110 @@ std::unordered_map<std::string, std::string> parse_inline_style(std::string_view
         result[name] = trim_copy(value);
     }
 
+    return result;
+}
+
+std::string extract_stylesheets(std::shared_ptr<Node> dom)
+{
+    std::string css;
+    std::queue<std::shared_ptr<Node>> q;
+
+    q.push(dom);
+
+    while (!q.empty())
+    {
+        auto node = q.front();
+        q.pop();
+
+        if (node->get_tag_name() == "style")
+        {
+            for (const auto &child : node->get_children())
+            {
+                if (child->get_type() == NODE_TYPE::TEXT)
+                {
+                    css += child->get_text_content();
+                }
+            }
+            css += '\n';
+        }
+
+        for (const auto &child : node->get_children())
+        {
+            q.push(child);
+        }
+    }
+
+    return css;
+}
+
+CSSOM create_cssom(const std::string &css)
+{
+    CSSOM cssom;
+    for (auto &rule : parse_css(css))
+    {
+        cssom.add_rule(rule);
+    }
+    return cssom;
+}
+
+std::vector<CssRule> parse_css(const std::string &css)
+{
+    size_t pos = 0;
+    std::string selector;
+    std::unordered_map<std::string, std::string> style;
+    bool is_comment = false;
+    std::vector<CssRule> result;
+    while (pos < css.size())
+    {
+        skip_space(pos, css);
+        if ((css[pos] == '/' && css[pos+1] == '*') || (css[pos] == '/' && css[pos+1] == '/'))
+        {
+            is_comment = true;
+            while (is_comment && pos < css.size())
+            {
+                ++pos;
+                if ((css[pos] == '*' && css[pos+1] == '/') || (css[pos] == '/' && css[pos+1] == '/'))
+                {
+                    is_comment = false;
+                }
+            }
+            pos+=2;
+        }
+
+
+        size_t block_start_pos = css.find('{', pos);
+        size_t block_end_pos = css.find('}', pos);
+        if (block_start_pos != std::string::npos)
+        {
+            selector = css.substr(pos, block_start_pos - pos);
+            trim(selector);
+            style = parse_inline_style(css.substr(block_start_pos + 1, block_end_pos - block_start_pos - 1));
+            CssRule rule(selector);
+            for (const auto &[property, value] : style)
+            {
+                rule.decelarations.push_back({property, value});
+            }
+            result.push_back(rule);
+
+            if (block_end_pos != std::string::npos)
+            {
+                pos = block_end_pos + 1;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        else if (block_start_pos == std::string::npos && block_end_pos != std::string::npos)
+        {
+            pos = block_end_pos + 1;
+        }
+
+        else
+        {
+            ++pos;
+        }
+    }
     return result;
 }
