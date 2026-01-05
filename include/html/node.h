@@ -10,10 +10,6 @@ enum class NODE_TYPE{
     ELEMENT,TEXT
 };
 
-enum class DISPLAY_TYPE{
-    BLOCK, INLINE, NONE
-};
-
 class Node{
     private:
         NODE_TYPE m_type;

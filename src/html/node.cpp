@@ -90,9 +90,9 @@ void Node::set_style(const std::string &name, const std::string &value)
     }
 }
 
-std::string Node::get_style(const std::string &property) const
-{
-}
+// std::string Node::get_style(const std::string &property) const
+// {
+// }
 
 ComputedStyle Node::get_all_styles() const
 {

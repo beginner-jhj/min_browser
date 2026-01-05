@@ -1,3 +1,4 @@
+#pragma once
 #include <QColor>
 #include <QFont>
 #include <QFontMetrics>
@@ -15,6 +16,10 @@ enum class TextAlign
     Center,
     Right,
     Justify
+};
+
+enum class DISPLAY_TYPE{
+    BLOCK, INLINE, NONE
 };
 
 struct ComputedStyle

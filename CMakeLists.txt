@@ -8,8 +8,8 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 set(CMAKE_AUTOMOC ON) # Qt meta-object compiler
 
 
-add_executable(browser 
-src/main.cpp)
+add_executable(browser
+    src/main.cpp)
 
 # Library: parsing logic
 add_library(parsing_lib
@@ -18,10 +18,14 @@ add_library(parsing_lib
     src/html/node.cpp
     src/css/css_parser.cpp
     src/css/style_applier.cpp
+    src/css/cssom.cpp
+    src/css/computed_style.cpp
+    src/css/apply_style.cpp
+    src/css/layout_tree.cpp
     src/util_functions.cpp
 )
 
-target_include_directories(parsing_lib PUBLIC 
+target_include_directories(parsing_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
@@ -31,11 +35,11 @@ add_library(rendering_lib
     src/rendering/browser_widget.cpp
 )
 
-target_include_directories(rendering_lib PUBLIC 
+target_include_directories(rendering_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(rendering_lib PUBLIC 
+target_link_libraries(rendering_lib PUBLIC
     parsing_lib
     Qt6::Widgets
 )

@@ -36,6 +36,17 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
     std::shared_ptr<Node> root = nullptr;
     for (auto &token : tokens)
     {
+        if (token.type == TOKEN_TYPE::TEXT)
+        {
+            std::string text = token.value;
+            text.erase(0, text.find_first_not_of(" \t\n\r"));
+            text.erase(text.find_last_not_of(" \t\n\r") + 1);
+
+            if (text.empty())
+            {
+                continue;
+            }
+        }
         if (token.type == TOKEN_TYPE::TEXT && stack.empty())
         {
             std::shared_ptr<Node> html = std::make_shared<Node>(NODE_TYPE::ELEMENT, "html");
