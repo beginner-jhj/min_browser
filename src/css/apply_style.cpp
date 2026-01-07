@@ -32,7 +32,7 @@ void apply_style(std::shared_ptr<Node> node, CSSOM &cssom) {
         
         auto matched_rules = cssom.matching_rules(current_node);
         for (const auto &rule : matched_rules) {
-            for (const auto &decl : rule.decelarations) {
+            for (const auto &decl : rule.declarations) {
                 current_node->set_style(decl.property, decl.value);
             }
         }

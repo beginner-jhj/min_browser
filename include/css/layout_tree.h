@@ -26,6 +26,7 @@ struct LayoutBox {
     float height = 0;
     
     std::vector<LayoutBox> children;
+    std::string text;
 };
 
 LayoutBox create_layout_tree(

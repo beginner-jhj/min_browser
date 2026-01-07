@@ -81,7 +81,7 @@ std::vector<Token> tokenize(const std::string &html)
             size_t end_pos = html.find('<', pos);
             if (!html.substr(pos, end_pos - pos).empty())
             {
-                tokens.push_back({TOKEN_TYPE::TEXT, html.substr(pos, end_pos - pos)});
+                tokens.push_back({TOKEN_TYPE::TEXT, html.substr(pos, end_pos - pos)}); //단어별로 토큰화 하면 안됨??
             }
             pos = end_pos;
         }

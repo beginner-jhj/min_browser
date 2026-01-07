@@ -11,7 +11,7 @@ struct Decelaration
 struct CssRule
 {
     std::string selector;
-    std::vector<Decelaration> decelarations;
+    std::vector<Decelaration> declarations;
 
     CssRule(std::string& s):selector(s){}
 };

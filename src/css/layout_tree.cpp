@@ -1,5 +1,6 @@
 #include "css/layout_tree.h"
 #include <QDebug>
+#include "util_functions.h"
 
 LayoutBox create_layout_tree(
     std::shared_ptr<Node> root,
@@ -92,27 +93,47 @@ LayoutBox create_layout_tree(
         QFontMetrics metrics(font);
 
         std::string text = root->get_text_content();
-        int text_width = metrics.horizontalAdvance(
-            QString::fromStdString(text));
-        int text_height = metrics.height();
+        std::vector<std::string> words = split_into_words(text);
 
-        if (line.current_x + text_width > line.max_width && line.current_x > 0)
+        for (auto &word : words)
         {
-            line.current_x = line.padding_left;
-            line.current_y += line.line_height;
-            line.line_height = 0;
+            int word_width = metrics.horizontalAdvance(QString::fromStdString(word));
+            int word_height = metrics.height();
+
+            if (line.current_x + word_width > line.max_width && line.current_x > 0)
+            {
+                line.current_x = line.padding_left;
+                line.current_y += line.line_height;
+                line.line_height = 0;
+            }
+
+            LayoutBox word_box;
+            word_box.node = root;
+            word_box.text = word;
+            word_box.style = box.style;
+            word_box.x = line.current_x;
+            word_box.y = line.current_y;
+            word_box.width = word_width;
+            word_box.height = word_height;
+
+            box.children.push_back(word_box);
+
+            line.current_x += word_width;
+            if (word_height > line.line_height)
+            {
+                line.line_height = word_height;
+            }
+
+            qDebug() << "line.max_width:" << line.max_width;
+            qDebug() << "current_x:" << line.current_x;
+            qDebug() << "word_width:" << word_width;
+            qDebug() << "wrap?" << (line.current_x + word_width > line.max_width);
         }
 
-        box.x = line.current_x;
-        box.y = line.current_y;
-        box.width = text_width;
-        box.height = text_height;
-
-        line.current_x += text_width;
-        if (text_height > line.line_height)
-        {
-            line.line_height = text_height;
-        }
+        box.x = box.children[0].x;
+        box.y = box.children[0].y;
+        box.width = line.current_x - box.x;
+        box.height = line.line_height;
 
         return box;
     }

@@ -11,10 +11,12 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     // renderer_test.cpp
-   std::string html = R"(
+    std::string html = R"(
 <html>
 <head>
     <style>
+        /*plz skip this*/
+        //and this too
         .box1 { 
             padding-top: 20;
             padding-bottom: 20;
@@ -38,6 +40,9 @@ int main(int argc, char *argv[])
     <p class="box1">Paragraph with padding - text should be away from border</p>
     <p class="box2">Paragraph with both margin and padding</p>
     <p>Normal paragraph</p>
+    <p style="width: 200px;">
+        This is a very long sentence that should wrap automatically
+    </p>
 </body>
 </html>
 )";

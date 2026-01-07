@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cctype>
 #include <queue>
+#include <QDebug>
 
 std::unordered_map<std::string, std::string> parse_inline_style(std::string_view style_string)
 {
@@ -123,25 +124,36 @@ std::vector<CssRule> parse_css(const std::string &css)
     size_t pos = 0;
     std::string selector;
     std::unordered_map<std::string, std::string> style;
-    bool is_comment = false;
     std::vector<CssRule> result;
     while (pos < css.size())
     {
         skip_space(pos, css);
-        if ((css[pos] == '/' && css[pos+1] == '*') || (css[pos] == '/' && css[pos+1] == '/'))
+
+        if (pos + 1 < css.size() && css[pos] == '/' && css[pos + 1] == '*')
         {
-            is_comment = true;
-            while (is_comment && pos < css.size())
+            pos += 2;
+
+            while (pos + 1 < css.size())
             {
-                ++pos;
-                if ((css[pos] == '*' && css[pos+1] == '/') || (css[pos] == '/' && css[pos+1] == '/'))
+                if (css[pos] == '*' && css[pos + 1] == '/')
                 {
-                    is_comment = false;
+                    pos += 2;
+                    break;
                 }
+                ++pos;
             }
-            pos+=2;
+            continue;
         }
 
+        if (pos + 1 < css.size() && css[pos] == '/' && css[pos + 1] == '/')
+        {
+            while (pos < css.size() && css[pos] != '\n')
+            {
+                ++pos;
+            }
+            ++pos;
+            continue;
+        }
 
         size_t block_start_pos = css.find('{', pos);
         size_t block_end_pos = css.find('}', pos);
@@ -153,7 +165,7 @@ std::vector<CssRule> parse_css(const std::string &css)
             CssRule rule(selector);
             for (const auto &[property, value] : style)
             {
-                rule.decelarations.push_back({property, value});
+                rule.declarations.push_back({property, value});
             }
             result.push_back(rule);
 

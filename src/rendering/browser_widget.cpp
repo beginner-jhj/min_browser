@@ -36,9 +36,11 @@ void BrowserWidget::set_document(std::shared_ptr<Node> root)
             strong { display: inline; }
             em { display: inline; }
         )";
-        std::string css = extract_stylesheets(m_root);
-        std::string final_css = ua_css + "/n" + css;
-        m_cssom = create_cssom(final_css);
+        std::string author_css = extract_stylesheets(m_root);
+
+        std::string combined_css = ua_css + "\n" + author_css;
+        m_cssom = create_cssom(combined_css);
+
 
         apply_style(m_root, m_cssom);
     }
@@ -82,27 +84,30 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
         painter.setPen(box.style.color);
 
         QFontMetrics metrics(ft);
-        std::string text = box.node->get_text_content();
         float baseline_y = abs_y + metrics.ascent();
 
-        float text_x = abs_x;
-
+        float text_width = metrics.horizontalAdvance(QString::fromStdString(box.node->get_text_content()));
+        float word_x = abs_x;
         if (parent_box)
         {
-            float text_width = metrics.horizontalAdvance(QString::fromStdString(text));
-
             if (parent_box->style.text_align == TextAlign::Center)
             {
-                text_x = offset_x + (parent_box->width - text_width) / 2;
+                word_x = offset_x + (parent_box->width - text_width) / 2;
             }
 
             else if (parent_box->style.text_align == TextAlign::Right)
             {
-                text_x = offset_x + parent_box->width - text_width;
+                word_x = offset_x + parent_box->width - text_width;
             }
         }
-
-        painter.drawText(text_x, baseline_y, QString::fromStdString(text));
+        for (const auto &word_box : box.children)
+        {
+            std::string word_text = word_box.text;
+            float word_width = metrics.horizontalAdvance(QString::fromStdString(word_text));
+            painter.drawText(word_x, baseline_y, QString::fromStdString(word_text));
+            word_x += word_width;
+        }
+        return;
     }
 
     for (const auto &child : box.children)

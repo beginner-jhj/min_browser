@@ -1,5 +1,6 @@
 #include "css/computed_style.h"
 #include "html/node.h"
+#include <QDebug>
 
 std::unordered_map<std::string, ComputedStyle::Setter> ComputedStyle::setters;
 
@@ -478,10 +479,14 @@ std::string ComputedStyle::inherit_text_align() const
     }
 }
 
-std::string ComputedStyle::inherit_visibility() const {
-    if(!visibility){
+std::string ComputedStyle::inherit_visibility() const
+{
+    if (!visibility)
+    {
         return "hidden";
-    }else{
+    }
+    else
+    {
         return "visible";
     }
 }
