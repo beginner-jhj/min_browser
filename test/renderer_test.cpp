@@ -5,6 +5,7 @@
 #include "html/html_tokenizer.h"
 #include <iostream>
 #include "css/layout_tree.h"
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -15,33 +16,20 @@ int main(int argc, char *argv[])
 <html>
 <head>
     <style>
-        /*plz skip this*/
-        //and this too
-        .box1 { 
-            padding-top: 20;
-            padding-bottom: 20;
-            padding-left: 30;
-            padding-right: 30;
-            border-width: 2;
-            border-color: red;
-            background-color: #ffeeee;
-        }
-        .box2 { 
-            margin-top: 10;
-            padding-top: 10;
-            padding-left: 50;
-            border-width: 2;
-            border-color: blue;
-            background-color: #eeeeff;
-        }
+        .normal { line-height: 17; }
+        .loose { line-height: 30; }
+        .tight { line-height: 10; }
     </style>
 </head>
 <body>
-    <p class="box1">Paragraph with padding - text should be away from border</p>
-    <p class="box2">Paragraph with both margin and padding</p>
-    <p>Normal paragraph</p>
-    <p style="width: 200px;">
-        This is a very long sentence that should wrap automatically
+    <p class="normal" style="width:400px;">
+        This is normal line height text that wraps
+    </p>
+    <p class="loose">
+        This is loose line height text that wraps
+    </p>
+    <p class="tight">
+        This is tight line height text that wraps
     </p>
 </body>
 </html>

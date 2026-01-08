@@ -2,7 +2,8 @@
 #include "css/css_parser.h"
 #include "css/apply_style.h"
 #include <iostream>
-BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr) {};
+#include <QDebug>
+BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr), m_layout_width(0), m_layout_height(0) {};
 
 void BrowserWidget::set_document(std::shared_ptr<Node> root)
 {
@@ -40,7 +41,6 @@ void BrowserWidget::set_document(std::shared_ptr<Node> root)
 
         std::string combined_css = ua_css + "\n" + author_css;
         m_cssom = create_cssom(combined_css);
-
 
         apply_style(m_root, m_cssom);
     }
@@ -84,29 +84,37 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
         painter.setPen(box.style.color);
 
         QFontMetrics metrics(ft);
-        float baseline_y = abs_y + metrics.ascent();
 
-        float text_width = metrics.horizontalAdvance(QString::fromStdString(box.node->get_text_content()));
-        float word_x = abs_x;
+        float offset_adjust = 0;
+
         if (parent_box)
         {
-            if (parent_box->style.text_align == TextAlign::Center)
+            float total_width = 0;
+            for (const auto &word_box : box.children)
             {
-                word_x = offset_x + (parent_box->width - text_width) / 2;
+                total_width += word_box.width;
             }
 
+            if (parent_box->style.text_align == TextAlign::Center)
+            {
+                offset_adjust = (parent_box->width - total_width) / 2;
+            }
             else if (parent_box->style.text_align == TextAlign::Right)
             {
-                word_x = offset_x + parent_box->width - text_width;
+                offset_adjust = parent_box->width - total_width;
             }
         }
+
         for (const auto &word_box : box.children)
         {
-            std::string word_text = word_box.text;
-            float word_width = metrics.horizontalAdvance(QString::fromStdString(word_text));
-            painter.drawText(word_x, baseline_y, QString::fromStdString(word_text));
-            word_x += word_width;
+            float word_abs_x = offset_x + word_box.x + offset_adjust;
+            float word_abs_y = offset_y + word_box.y;
+            float baseline_y = word_abs_y + metrics.ascent();
+
+            painter.drawText(word_abs_x, baseline_y,
+                             QString::fromStdString(word_box.text));
         }
+
         return;
     }
 
@@ -149,6 +157,8 @@ void BrowserWidget::paintEvent(QPaintEvent *event)
     int viewport_width = this->width();
     LineState line(viewport_width);
     LayoutBox layout = create_layout_tree(m_root, viewport_width, line);
+    m_layout_width = layout.width;
+    m_layout_height = layout.height;
 
     paint_layout(painter, layout, 0, 0);
 }

@@ -100,7 +100,9 @@ LayoutBox create_layout_tree(
             int word_width = metrics.horizontalAdvance(QString::fromStdString(word));
             int word_height = metrics.height();
 
-            if (line.current_x + word_width > line.max_width && line.current_x > 0)
+            bool will_wrap = line.current_x + word_width > line.max_width && line.current_x > 0;
+
+            if (will_wrap)
             {
                 line.current_x = line.padding_left;
                 line.current_y += line.line_height;
@@ -119,15 +121,12 @@ LayoutBox create_layout_tree(
             box.children.push_back(word_box);
 
             line.current_x += word_width;
-            if (word_height > line.line_height)
-            {
-                line.line_height = word_height;
-            }
 
-            qDebug() << "line.max_width:" << line.max_width;
-            qDebug() << "current_x:" << line.current_x;
-            qDebug() << "word_width:" << word_width;
-            qDebug() << "wrap?" << (line.current_x + word_width > line.max_width);
+            float effective_line_height = std::max(static_cast<float>(word_height), box.style.line_height);
+            if (effective_line_height > line.line_height)
+            {
+                line.line_height = effective_line_height;
+            }
         }
 
         box.x = box.children[0].x;
