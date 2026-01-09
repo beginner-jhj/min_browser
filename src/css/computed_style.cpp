@@ -265,6 +265,24 @@ void ComputedStyle::init_setters()
             s.visibility = true;
         }
     };
+
+    setters["text-decoration"] = [](ComputedStyle &s, const std::string &value){
+        if(value == "underline"){
+            s.text_decoration = TextDecoration::UnderLine;
+        }
+
+        else if(value == "line-through"){
+            s.text_decoration = TextDecoration::LineThrough;
+        }
+
+        else if(value == "overline"){
+            s.text_decoration = TextDecoration::OverLine;
+        }
+
+        else{
+            s.text_decoration = TextDecoration::None;
+        }
+    };
 }
 
 QColor ComputedStyle::parse_color(const std::string &color_value)

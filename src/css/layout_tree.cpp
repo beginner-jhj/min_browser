@@ -5,7 +5,7 @@
 LayoutBox create_layout_tree(
     std::shared_ptr<Node> root,
     float parent_width,
-    LineState &line, int current_screen_width)
+    LineState &line)
 {
     LayoutBox box;
     box.node = root;
@@ -52,7 +52,7 @@ LayoutBox create_layout_tree(
             float child_parent_width = box.width -
                                        box.style.padding_left -
                                        box.style.padding_right;
-            LayoutBox child_box = create_layout_tree(child, child_parent_width, line, current_screen_width);
+            LayoutBox child_box = create_layout_tree(child, child_parent_width, line);
 
             if (child_box.style.display == DISPLAY_TYPE::BLOCK)
             {
@@ -104,7 +104,7 @@ LayoutBox create_layout_tree(
             // qDebug() << "word_text: " << word;
             // qDebug() << "line.current_x + word_width = " << line.current_x << " + " << word_width << " = " << line.current_x +word_width;
             // qDebug() << "max_width: " << line.max_width;
-            bool will_wrap = (line.current_x + word_width > line.max_width || line.current_x + word_width > current_screen_width) && line.current_x > 0;
+            bool will_wrap = (line.current_x + word_width > line.max_width) && line.current_x > 0;
 
             // qDebug() << "will_wrap: " << will_wrap;
 
@@ -150,17 +150,17 @@ LayoutBox create_layout_tree(
 
         for (auto child : root->get_children())
         {
-            LayoutBox child_box = create_layout_tree(child, parent_width, line, current_screen_width);
-            child_box.x -= start_x;
-            child_box.y -= start_y;
+            LayoutBox child_box = create_layout_tree(child, parent_width, line);
+            // child_box.x -= start_x;
+            // child_box.y -= start_y;
             box.children.push_back(child_box);
         }
 
         float end_x = line.current_x;
         float max_height = line.line_height;
 
-        box.x = start_x;
-        box.y = start_y;
+        box.y = 0;
+        box.x = 0;
         box.width = end_x - start_x;
         box.height = max_height;
 

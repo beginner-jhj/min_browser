@@ -22,6 +22,10 @@ enum class DISPLAY_TYPE{
     BLOCK, INLINE, NONE
 };
 
+enum class TextDecoration{
+    None,UnderLine,LineThrough, OverLine 
+};
+
 struct ComputedStyle
 {
     QColor color = QColor("#000000");          // default: black
@@ -51,6 +55,7 @@ struct ComputedStyle
     DISPLAY_TYPE display = DISPLAY_TYPE::INLINE;
     BoxSizing box_sizing = BoxSizing::ContentBox;
     TextAlign text_align = TextAlign::Left;
+    TextDecoration text_decoration = TextDecoration::None;
 
     float line_height = font_size * 1.5;
 

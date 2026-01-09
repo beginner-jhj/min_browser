@@ -3,7 +3,7 @@
 #include "css/apply_style.h"
 #include <iostream>
 #include <QDebug>
-BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr), m_current_screen_width(0){};
+BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr) {}
 
 void BrowserWidget::set_document(std::shared_ptr<Node> root)
 {
@@ -105,6 +105,7 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
             }
         }
 
+
         for (const auto &word_box : box.children)
         {
             float word_abs_x = offset_x + word_box.x + offset_adjust;
@@ -113,6 +114,43 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
 
             painter.drawText(word_abs_x, baseline_y,
                              QString::fromStdString(word_box.text));
+
+            switch (box.style.text_decoration)
+            {
+            case TextDecoration::UnderLine:
+                qDebug() << "underline";
+                break;
+            case TextDecoration::LineThrough:
+                qDebug() << "line-through";
+                break;
+            case TextDecoration::OverLine:
+                qDebug() << "overline";
+                break;
+            default:
+                qDebug() << "none";
+                break;
+            }
+            if (box.style.text_decoration != TextDecoration::None)
+            {
+                QPen decoration_pen(box.style.color);
+                decoration_pen.setWidth(1);
+                painter.setPen(decoration_pen);
+                float decoration_y = 0;
+                switch (box.style.text_decoration)
+                {
+                case TextDecoration::UnderLine:
+                    decoration_y = baseline_y + 1;
+                    break;
+                case TextDecoration::LineThrough:
+                    decoration_y = word_abs_y + metrics.ascent() / 2;
+                    break;
+                default:
+                    decoration_y = word_abs_y;
+                    break;
+                }
+                painter.drawLine(word_abs_x, decoration_y, word_abs_x + word_box.width, decoration_y);
+                painter.setPen(box.style.color);
+            }
         }
 
         return;
@@ -144,6 +182,22 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
 //     }
 // }
 
+float calculate_content_width(const LayoutBox &box)
+{
+    float max_right = box.x + box.width;
+
+    for (const auto &child : box.children)
+    {
+        float child_right = child.x + calculate_content_width(child);
+        if (child_right > max_right)
+        {
+            max_right = child_right;
+        }
+    }
+
+    return max_right;
+}
+
 void BrowserWidget::paintEvent(QPaintEvent *event)
 {
     if (!m_root)
@@ -154,15 +208,17 @@ void BrowserWidget::paintEvent(QPaintEvent *event)
 
     painter.fillRect(rect(), Qt::white);
 
-    int viewport_width = this->width();
+    QWidget *scrollArea = parentWidget();
+    int viewport_width = scrollArea ? scrollArea->width() : this->width();
+
     LineState line(viewport_width);
-    LayoutBox layout = create_layout_tree(m_root, viewport_width, line, m_current_screen_width);
+    LayoutBox layout = create_layout_tree(m_root, viewport_width, line);
 
     paint_layout(painter, layout, 0, 0);
-}
 
-void BrowserWidget::resizeEvent(QResizeEvent *event){
-    m_current_screen_width = this->width();
-    // qDebug() << "current screen width: " << width;
-    QWidget::resizeEvent(event);
+    float content_width = calculate_content_width(layout);
+
+    int min_width = std::max(static_cast<float>(viewport_width), content_width);
+
+    setMinimumSize(min_width, layout.height);
 }
