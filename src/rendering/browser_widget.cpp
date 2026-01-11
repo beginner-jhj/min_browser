@@ -3,7 +3,7 @@
 #include "css/apply_style.h"
 #include <iostream>
 #include <QDebug>
-BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr) {}
+BrowserWidget::BrowserWidget(QWidget *parent) : QWidget(parent), m_root(nullptr), m_viewport_width(0), m_viewport_height(0) {}
 
 void BrowserWidget::set_document(std::shared_ptr<Node> root)
 {
@@ -48,6 +48,71 @@ void BrowserWidget::set_document(std::shared_ptr<Node> root)
     update();
 }
 
+void BrowserWidget::paint_fixed(QPainter &painter, const LayoutBox &box)
+{
+    float abs_x = 0;
+    float abs_y = 0;
+
+    if (box.style.is_left_set)
+    {
+        abs_x = box.style.left;
+    }
+    else if (box.style.is_right_set)
+    {
+        abs_x = m_viewport_width - box.width - box.style.right;
+    }
+
+    if (box.style.is_top_set)
+    {
+        abs_y = box.style.top;
+    }
+    else if (box.style.is_bottom_set)
+    {
+        abs_y = m_viewport_height - box.height - box.style.bottom;
+    }
+
+    // if (box.style.width <= 0)
+    // {
+
+    // }
+
+    float previous_opacity = painter.opacity();
+    painter.setOpacity(previous_opacity * box.style.opacity);
+
+    if (box.style.background_color != QColor("transparent"))
+    {
+        painter.fillRect(
+            abs_x, abs_y,
+            box.width, box.height,
+            box.style.background_color);
+    }
+
+    if (box.style.border_width > 0)
+    {
+        QPen pen;
+        pen.setColor(box.style.border_color);
+        pen.setStyle(box.style.border_style);
+        pen.setWidthF(box.style.border_width);
+
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+
+        painter.drawRect(abs_x, abs_y, box.width, box.height);
+    }
+
+    if (box.node->get_type() == NODE_TYPE::TEXT)
+    {
+
+    }
+
+    for (const auto &child : box.children)
+    {
+        paint_layout(painter, child, abs_x, abs_y, &box);
+    }
+
+    painter.setOpacity(previous_opacity);
+}
+
 void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box)
 {
     float abs_x = offset_x + box.x;
@@ -55,6 +120,12 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
 
     float previous_opacity = painter.opacity();
     painter.setOpacity(previous_opacity * box.style.opacity);
+
+    if (box.style.position == PositionType::Relative)
+    {
+        abs_x += box.style.left - box.style.right;
+        abs_y += box.style.top - box.style.bottom;
+    }
 
     if (box.node->get_type() == NODE_TYPE::ELEMENT)
     {
@@ -147,6 +218,19 @@ void BrowserWidget::paint_layout(QPainter &painter, const LayoutBox &box, float 
     {
         paint_layout(painter, child, abs_x, abs_y, &box);
     }
+
+    for (const auto &abs_child : box.absolute_children)
+    {
+        if (abs_child.style.position == PositionType::Fixed)
+        {
+            paint_fixed(painter, abs_child);
+        }
+
+        else
+        {
+            paint_layout(painter, abs_child, abs_x, abs_y, &box);
+        }
+    }
 }
 
 // void print_layout_debug(const LayoutBox& box, int depth) {
@@ -197,6 +281,10 @@ void BrowserWidget::paintEvent(QPaintEvent *event)
 
     QWidget *scrollArea = parentWidget();
     int viewport_width = scrollArea ? scrollArea->width() : this->width();
+    int viewport_height = scrollArea ? scrollArea->height() : this->height();
+
+    m_viewport_width = viewport_width;
+    m_viewport_height = viewport_height;
 
     LineState line(viewport_width);
     LayoutBox layout = create_layout_tree(m_root, viewport_width, line);

@@ -39,6 +39,8 @@ LayoutBox create_layout_tree(
             box.width = parent_width - box.style.margin_left - box.style.margin_right;
         }
 
+        box.is_positioned = box.style.position != PositionType::Static;
+
         line.current_x = box.style.padding_left;
         line.current_y = box.style.padding_top;
         line.line_height = 0;
@@ -53,6 +55,42 @@ LayoutBox create_layout_tree(
                                        box.style.padding_left -
                                        box.style.padding_right;
             LayoutBox child_box = create_layout_tree(child, child_parent_width, line);
+
+            if (child_box.style.position == PositionType::Absolute)
+            {
+                if (child_box.style.width > 0)
+                {
+                    child_box.width = child_box.style.width;
+                }
+
+                else
+                {
+                    child_box.width = child_parent_width;
+                }
+                child_box.x = box.style.padding_left + child_box.style.left;
+                child_box.y = box.style.padding_top + child_box.style.top;
+
+                box.absolute_children.push_back(child_box);
+                continue;
+            }
+
+            else if (child_box.style.position == PositionType::Fixed)
+            {
+                if (child_box.style.width > 0)
+                {
+                    child_box.width = child_box.style.width;
+                }
+
+                else
+                {
+                    child_box.width = child_parent_width;
+                }
+
+                child_box.x = 0;
+                child_box.y = 0;
+                box.absolute_children.push_back(child_box);
+                continue;
+            }
 
             if (child_box.style.display == DISPLAY_TYPE::BLOCK)
             {
@@ -98,7 +136,7 @@ LayoutBox create_layout_tree(
 
         for (auto &word : words)
         {
-            
+
             int word_width = metrics.horizontalAdvance(QString::fromStdString(word));
             int word_height = metrics.height();
 
@@ -124,7 +162,6 @@ LayoutBox create_layout_tree(
             word_box.y = line.current_y;
             word_box.width = word_width;
             word_box.height = word_height;
-
 
             box.children.push_back(word_box);
 

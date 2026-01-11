@@ -18,12 +18,27 @@ enum class TextAlign
     Justify
 };
 
-enum class DISPLAY_TYPE{
-    BLOCK, INLINE, NONE
+enum class DISPLAY_TYPE
+{
+    BLOCK,
+    INLINE,
+    NONE
 };
 
-enum class TextDecoration{
-    None,UnderLine,LineThrough, OverLine 
+enum class TextDecoration
+{
+    None,
+    UnderLine,
+    LineThrough,
+    OverLine
+};
+
+enum class PositionType
+{
+    Static,
+    Relative,
+    Absolute,
+    Fixed
 };
 
 struct ComputedStyle
@@ -62,6 +77,16 @@ struct ComputedStyle
 
     float line_height = font_size * 1.5;
     float opacity = 1;
+
+    PositionType position = PositionType::Static;
+    float top = 0.0;
+    bool is_top_set = false;
+    float right = 0.0;
+    bool is_right_set = false;
+    float bottom = 0.0;
+    bool is_bottom_set = false;
+    float left = 0.0;
+    bool is_left_set = false;
 
     bool visibility = true;
 

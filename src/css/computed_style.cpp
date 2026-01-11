@@ -445,6 +445,50 @@ void ComputedStyle::init_setters()
         if (s.opacity > 1.0)
             s.opacity = 1.0;
     };
+
+    setters["position"] = [](ComputedStyle &s, const std::string &value)
+    {
+        if (value == "relative")
+        {
+            s.position = PositionType::Relative;
+        }
+        else if (value == "absolute")
+        {
+            s.position = PositionType::Absolute;
+        }
+        else if (value == "fixed")
+        {
+            s.position = PositionType::Fixed;
+        }
+        else
+        {
+            s.position = PositionType::Static;
+        }
+    };
+
+    setters["top"] = [](ComputedStyle &s, const std::string &value)
+    {
+        s.top = parse_string_to_float(value, 0);
+        s.is_top_set = true;
+    };
+
+    setters["right"] = [](ComputedStyle &s, const std::string &value)
+    {
+        s.right = parse_string_to_float(value, 0);
+        s.is_right_set = true;
+    };
+
+    setters["bottom"] = [](ComputedStyle &s, const std::string &value)
+    {
+        s.bottom = parse_string_to_float(value, 0);
+        s.is_bottom_set = true;
+    };
+
+    setters["left"] = [](ComputedStyle &s, const std::string &value)
+    {
+        s.left = parse_string_to_float(value, 0);
+        s.is_left_set = true;
+    };
 }
 
 QColor ComputedStyle::parse_color(const std::string &color_value)

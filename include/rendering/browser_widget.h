@@ -12,8 +12,10 @@ class BrowserWidget : public QWidget
 private:
     std::shared_ptr<Node> m_root;
     CSSOM m_cssom;
+    int m_viewport_width, m_viewport_height;
 
-    void paint_layout(QPainter& painter, const LayoutBox& box, float offset_x, float offset_y, const LayoutBox *parent_box=nullptr);
+    void paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box = nullptr);
+    void paint_fixed(QPainter &painter, const LayoutBox &box);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

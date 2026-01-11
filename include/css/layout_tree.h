@@ -27,6 +27,9 @@ struct LayoutBox {
     
     std::vector<LayoutBox> children;
     std::string text;
+
+    bool is_positioned = false;
+    std::vector<LayoutBox> absolute_children;
 };
 
 LayoutBox create_layout_tree(
