@@ -5,11 +5,32 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-set(CMAKE_AUTOMOC ON) # Qt meta-object compiler
+set(CMAKE_AUTOMOC ON)
 
+# GUI Library
+add_library(gui_lib
+    src/gui/main_window.cpp
+)
 
+target_include_directories(gui_lib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(gui_lib PUBLIC
+    rendering_lib
+    Qt6::Widgets
+)
+
+# Browser executable - now uses MainWindow
 add_executable(browser
-    src/main.cpp)
+    src/main.cpp
+)
+
+target_link_libraries(browser PRIVATE 
+    gui_lib
+    parsing_lib 
+    Qt6::Widgets
+)
 
 # Library: parsing logic
 add_library(parsing_lib
@@ -43,8 +64,6 @@ target_link_libraries(rendering_lib PUBLIC
     parsing_lib
     Qt6::Widgets
 )
-
-target_link_libraries(browser PRIVATE parsing_lib Qt6::Widgets)
 
 # Enable testing
 enable_testing()
