@@ -1,6 +1,7 @@
 #pragma once
 #include <QMainWindow>
 #include "html/node.h"
+#include <memory>
 
 class MainWindow: public QMainWindow{
     Q_OBJECT
@@ -9,7 +10,6 @@ class MainWindow: public QMainWindow{
         void setup_ui();
 
 std::string m_init_html = R"(
-    <!DOCTYPE html>
     <html>
         <head>
         </head>
@@ -30,10 +30,6 @@ std::string m_init_html = R"(
             <p>Built with a focus on understanding browser internals, 
                this project demonstrates core web rendering concepts 
                without relying on existing browser engines.</p>
-            
-            <footer>
-                <p><em>Developed by 현진</em></p>
-            </footer>
         </body>
     </html>
 )";

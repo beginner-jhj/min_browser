@@ -16,9 +16,12 @@ private:
 
     void paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box = nullptr);
     void paint_fixed(QPainter &painter, const LayoutBox &box);
-    void draw();
+    void recalculate_layout();
+    LayoutBox m_layout_tree;
+    bool m_has_layout = false;
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 public:
     explicit Renderer(QWidget *parent = nullptr);

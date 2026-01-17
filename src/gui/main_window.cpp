@@ -5,6 +5,7 @@
 #include <QScrollArea>
 #include "html/html_tokenizer.h"
 #include "html/html_parser.h"
+#include <QDebug>
 
 MainWindow::MainWindow(){
     setup_ui();
@@ -21,12 +22,13 @@ void MainWindow::setup_ui()
 
     Header *header = new Header(this);
 
-    layout->addWidget(header,1);
+    layout->addWidget(header);
 
     QScrollArea *rendering_scroll_area = new QScrollArea(this);
 
     //todo: complete rendering logic. tokenizing, parsing, set_document
     Renderer *renderer = new Renderer(rendering_scroll_area);
+    // renderer->setMinimumSize(1000, 600);
 
     std::shared_ptr<Node> tree = create_tree(m_init_html);
     renderer->set_document(tree);
@@ -34,7 +36,7 @@ void MainWindow::setup_ui()
     rendering_scroll_area->setWidget(renderer);
     rendering_scroll_area->setWidgetResizable(true);
 
-    layout->addWidget(rendering_scroll_area,3);
+    layout->addWidget(rendering_scroll_area,1);
 }
 
 std::shared_ptr<Node> MainWindow::create_tree(const std::string& html){

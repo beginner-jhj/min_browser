@@ -3,9 +3,12 @@
 #include "css/apply_style.h"
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QResizeEvent>
 #include <queue>
 
 Renderer::Renderer(QWidget *parent) : QWidget(parent), m_root(nullptr), m_viewport_height(0), m_viewport_width(0) {}
+
+float calculate_content_width(const LayoutBox &box);
 
 void Renderer::set_document(std::shared_ptr<Node> root)
 {
@@ -45,12 +48,49 @@ void Renderer::set_document(std::shared_ptr<Node> root)
         m_cssom = create_cssom(combined_css);
 
         apply_style(m_root, m_cssom);
+
+        recalculate_layout();
     }
     update();
 }
 
-float calculate_content_width(const LayoutBox &box);
+void Renderer::resizeEvent(QResizeEvent *event)
+{
+    if (m_root && event->oldSize().width() != event->size().width())
+    {
+        recalculate_layout();
+    }
 
+    QWidget::resizeEvent(event);
+}
+
+void Renderer::recalculate_layout()
+{
+    if (!m_root)
+        return;
+
+    int current_width = this->width();
+    if (current_width <= 0)
+    {
+        QWidget *scroll_area = parentWidget(); // Viewport
+        if (scroll_area)
+            current_width = scroll_area->width();
+        if (current_width <= 0)
+            current_width = 1000;
+    }
+
+    LineState line(current_width);
+
+    m_layout_tree = create_layout_tree(m_root, current_width, line);
+    m_has_layout = true;
+
+    float content_width = calculate_content_width(m_layout_tree);
+    float final_height = m_layout_tree.height;
+
+    float min_width = std::max(static_cast<float>(current_width), content_width);
+
+    this->setMinimumSize(min_width, final_height);
+}
 void Renderer::paintEvent(QPaintEvent *event)
 {
     if (!m_root)
@@ -63,20 +103,20 @@ void Renderer::paintEvent(QPaintEvent *event)
 
     painter.fillRect(rect(), Qt::white);
 
-    QWidget *scroll_area = parentWidget();
-    int viewport_width = scroll_area ? scroll_area->width() : this->width();
-    int viewport_height = scroll_area ? scroll_area->height() : this->height();
+    // QWidget *scroll_area = parentWidget();
+    // int viewport_width = scroll_area ? scroll_area->width() : this->width();
+    // int viewport_height = scroll_area ? scroll_area->height() : this->height();
 
-    LineState line(viewport_width);
-    LayoutBox layout = create_layout_tree(m_root, viewport_width, line);
+    // LineState line(viewport_width);
+    // LayoutBox layout = create_layout_tree(m_root, viewport_width, line);
 
-    paint_layout(painter, layout, 0, 0);
+    paint_layout(painter, m_layout_tree, 0, 0);
 
-    float content_width = calculate_content_width(layout);
+    // float content_width = calculate_content_width(layout);
 
-    int min_width = std::max(static_cast<float>(viewport_width), content_width);
+    // int min_width = std::max(static_cast<float>(viewport_width), content_width);
 
-    setMinimumSize(min_width, layout.height);
+    // setMinimumSize(min_width, layout.height);
 }
 
 void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box)
@@ -278,24 +318,31 @@ void Renderer::paint_fixed(QPainter &painter, const LayoutBox &box)
     painter.setOpacity(previous_opacity);
 }
 
-float calculate_content_width(const LayoutBox& root){
+float calculate_content_width(const LayoutBox &root)
+{
     float max_right = root.x + root.width;
-    std::queue<LayoutBox> q;
-    q.push(root);
 
-    while(!q.empty()){
-        auto current_box = q.front();
+    std::queue<std::pair<LayoutBox, float>> q;
+    q.push({root, 0.0f});
+
+    while (!q.empty())
+    {
+        auto [current_box, parent_abs_x] = q.front();
         q.pop();
 
-        float current_right = current_box.x + current_box.width;
-        if(current_right > max_right){
+        float current_abs_x = parent_abs_x + current_box.x;
+        float current_right = current_abs_x + current_box.width;
+
+        if (current_right > max_right)
+        {
             max_right = current_right;
         }
 
-        for(const auto &child : current_box.children){
-            q.push(child);
+        for (const auto &child : current_box.children)
+        {
+            q.push({child, current_abs_x});
         }
     }
 
-    return max_right -  root.x;
+    return max_right - root.x;
 }
