@@ -1,15 +1,21 @@
 #include "css/cssom.h"
 #include "util_functions.h"
+#include <algorithm>
 
 std::vector<CssRule> CSSOM::matching_rules(std::shared_ptr<Node> node)
 {
     std::vector<CssRule> matched;
 
-    for (const auto &rule : m_rules)
+    for (auto &rule : m_rules)
     {
-        if (matches(rule.selector, node))
-        {
-            matched.push_back(rule);
+        rule.selector.erase(std::remove_if(rule.selector.begin(), rule.selector.end(), [](unsigned char c){
+            return std::isspace(c);
+        }), rule.selector.end());
+        auto multiple_selectors = split(rule.selector, ',');
+        for(auto selector:multiple_selectors){
+            if(matches(selector, node)){
+                matched.push_back(rule);
+            }
         }
     }
 
@@ -18,6 +24,7 @@ std::vector<CssRule> CSSOM::matching_rules(std::shared_ptr<Node> node)
 
 bool CSSOM::matches(const std::string &selector, std::shared_ptr<Node> node)
 {
+    
     if (selector[0] == '.')
     {
         std::string class_value = node->get_attribute("class");

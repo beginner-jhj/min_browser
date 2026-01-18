@@ -17,31 +17,39 @@ void Renderer::set_document(std::shared_ptr<Node> root)
     if (m_root)
     {
         std::string user_agent_css = R"(
-            /* Hidden elements */
-            head { display: none; }
-            style { display: none; }
-            script { display: none; }
-            meta { display: none; }
-            link { display: none; }
-            title { display: none; }
-            
-            /* Block elements */
-            html { display: block; }
-            body { display: block; }
-            div { display: block; }
-            p { display: block; }
-            h1 { display: block; }
-            h2 { display: block; }
-            ul { display: block; }
-            ol { display: block; }
-            li { display: block; }
-            
-            /* Inline elements */
-            span { display: inline; }
-            a { display: inline; }
-            strong { display: inline; }
-            em { display: inline; }
-        )";
+    /* Hidden elements */
+    head, style, script, meta, link, title { display: none; }
+    
+    /* Block elements */
+    html, body, div, p, h1, h2, h3, h4, h5, h6, ul, ol, li, footer, header, section { 
+        display: block; 
+    }
+    
+    /* Default spacing for the page */
+    body { 
+        padding: 8px; 
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    /* Heading Styles */
+    h1 { font-size: 32px; font-weight: bold; margin-top: 21px; margin-bottom: 21px; }
+    h2 { font-size: 24px; font-weight: bold; margin-top: 19px; margin-bottom: 19px; }
+    h3 { font-size: 18px; font-weight: bold; margin-top: 18px; margin-bottom: 18px; }
+    h4 { font-size: 16px; font-weight: bold; margin-top: 21px; margin-bottom: 21px; }
+    h5 { font-size: 13px; font-weight: bold; margin-top: 22px; margin-bottom: 22px; }
+    h6 { font-size: 10px; font-weight: bold; margin-top: 24px; margin-bottom: 24px; }
+
+    /* Paragraph & List Spacing */
+    p { margin-top: 16px; margin-bottom: 16px; }
+    ul, ol { padding-left: 40px; margin-top: 16px; margin-bottom: 16px; }
+
+    /* Inline elements */
+    span, a, strong, em { display: inline; }
+    strong { font-weight: bold; }
+    em { font-style: italic; }
+    a { color: blue; text-decoration: underline; }
+)";
         std::string author_css = extract_stylesheets(m_root);
 
         std::string combined_css = user_agent_css + "\n" + author_css;
@@ -103,20 +111,7 @@ void Renderer::paintEvent(QPaintEvent *event)
 
     painter.fillRect(rect(), Qt::white);
 
-    // QWidget *scroll_area = parentWidget();
-    // int viewport_width = scroll_area ? scroll_area->width() : this->width();
-    // int viewport_height = scroll_area ? scroll_area->height() : this->height();
-
-    // LineState line(viewport_width);
-    // LayoutBox layout = create_layout_tree(m_root, viewport_width, line);
-
     paint_layout(painter, m_layout_tree, 0, 0);
-
-    // float content_width = calculate_content_width(layout);
-
-    // int min_width = std::max(static_cast<float>(viewport_width), content_width);
-
-    // setMinimumSize(min_width, layout.height);
 }
 
 void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box)
@@ -135,7 +130,7 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
 
     if (box.node->get_type() == NODE_TYPE::ELEMENT)
     {
-        if (box.style.background_color != QColor("trnasparent"))
+        if (box.style.background_color != QColor("transparent"))
         {
             painter.fillRect(
                 abs_x, abs_y,
@@ -184,6 +179,11 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
             {
                 offset_adjust = parent_box->width - total_width;
             }
+        }
+
+        if(parent_box && parent_box->node->get_tag_name() == "li"){
+            painter.drawText(offset_x + box.x + offset_adjust, offset_y + box.y + metrics.ascent(), "•");
+            offset_adjust += 15;
         }
 
         for (const auto &word_box : box.children)

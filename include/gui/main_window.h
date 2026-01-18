@@ -2,18 +2,25 @@
 #include <QMainWindow>
 #include "html/node.h"
 #include <memory>
+#include "gui/header.h"
+#include "gui/renderer.h"
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
-class MainWindow: public QMainWindow{
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
-    private:
-        void setup_ui();
+private:
+    void setup_ui();
 
-std::string m_init_html = R"(
+    std::string m_init_html = R"(
+    <!DOCTYPE html>
     <html>
         <head>
         </head>
         <body>
+            <! -- comments -- !>
             <h1>🌐 Welcome to My Custom Browser</h1>
             
             <p>A lightweight browser engine built from scratch with C++ and Qt.</p>
@@ -30,11 +37,62 @@ std::string m_init_html = R"(
             <p>Built with a focus on understanding browser internals, 
                this project demonstrates core web rendering concepts 
                without relying on existing browser engines.</p>
+            
+            <footer>
+                <p><em>Developed by 현진</em></p>
+            </footer>
         </body>
     </html>
 )";
 
-    public:
-       explicit MainWindow();
-       std::shared_ptr<Node> create_tree(const std::string &html);
+std::string m_network_failed_html = R"(
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            display: block; 
+            padding: 40px; 
+            background-color: #f4f4f9; 
+            text-align: center;
+        }
+        div { 
+            display: block;
+            background: white; 
+            padding: 30px; 
+            margin: 0 auto;
+            max-width: 500px; 
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+        h1 { color: #e74c3c; font-size: 24px; margin-bottom: 10px; }
+        p { color: #555; line-height: 1.6; margin-bottom: 20px; }
+        .footer { font-size: 12px; color: #aaa; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Failed to connect</h1>
+        <p>Server error or Invalid URL<br>Check your network.</p>
+    </div>
+</body>
+</html>
+)";
+
+    Header *m_header;
+    Renderer *m_renderer;
+    QNetworkAccessManager *m_network_manager;
+
+    
+
+    void set_connections();
+
+public slots:
+    void render_file(const QString &file_path);
+    void fetch_url(const QString &url);
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+    std::shared_ptr<Node> create_tree(const std::string &html);
 };

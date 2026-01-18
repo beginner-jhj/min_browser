@@ -86,3 +86,29 @@ std::vector<std::string> split_into_words(const std::string &text)
 
     return result;
 }
+
+void normalize_whitespace(std::string &s)
+{
+    trim(s);
+    if (s.empty())
+        return;
+    std::string result;
+    bool last_was_space = false;
+    for (char c : s)
+    {
+        if (std::isspace(static_cast<unsigned char>(c)))
+        {
+            if (!last_was_space)
+            {
+                result += ' ';
+                last_was_space = true;
+            }
+        }
+        else
+        {
+            result += c;
+            last_was_space = false;
+        }
+    }
+    s = result;
+}

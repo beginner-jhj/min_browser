@@ -1,6 +1,7 @@
 #include "html/html_parser.h"
 #include "css/css_parser.h"
 #include "util_functions.h"
+#include <set>
 
 /*
 "initial" mode - Before anything exists
@@ -32,6 +33,7 @@ If you get TEXT → insert it normally
 
 std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
 {
+    std::set<std::string> void_elements = {"meta", "link", "img", "br", "hr", "input"};
     std::vector<std::shared_ptr<Node>> stack;
     std::shared_ptr<Node> root = nullptr;
     for (auto &token : tokens)
@@ -76,7 +78,9 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
             {
                 root = new_node;
             }
-            stack.push_back(new_node);
+            if(void_elements.find(token.value) == void_elements.end()){
+                stack.push_back(new_node);
+            }
             continue;
         }
 

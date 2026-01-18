@@ -11,13 +11,17 @@ class Header: public QWidget{
         QPushButton *m_file_open_button;
         QComboBox *m_url_dropdown;
         QPushButton *m_go_button;
+        QPushButton *m_reset_button;
         QString m_selected_url;
 
         void draw();
-        void set_event_conn();
+        void set_connections();
 
     signals:
         void url_selected(const QString& url);
+        void file_selected(const QString& file_path);
+        void reset();
+    
     public:
         Header(QWidget *parent=nullptr);
 };

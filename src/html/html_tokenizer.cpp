@@ -32,13 +32,23 @@ std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
     return attrs;
 }
 
-std::vector<Token> tokenize(const std::string &html)
+std::vector<Token> tokenize(const std::string &html) // todo: ignoring comments.
 {
     std::vector<Token> tokens;
 
     size_t pos = 0;
     while (pos < html.size())
     {
+        if (html[pos] == '<' && pos + 1 < html.size() && html[pos + 1] == '!')
+        {
+            size_t end_pos = html.find('>', pos);
+            if (end_pos != std::string::npos)
+            {
+                pos = end_pos + 1;
+                continue;
+            }
+        }
+
         if (html[pos] == '<')
         {
             size_t end_pos = html.find('>', pos);
@@ -81,7 +91,12 @@ std::vector<Token> tokenize(const std::string &html)
             size_t end_pos = html.find('<', pos);
             if (!html.substr(pos, end_pos - pos).empty())
             {
-                tokens.push_back({TOKEN_TYPE::TEXT, html.substr(pos, end_pos - pos)}); //단어별로 토큰화 하면 안됨??
+                std::string text = html.substr(pos, end_pos - pos);
+                normalize_whitespace(text);
+                if (!text.empty())
+                {
+                    tokens.push_back({TOKEN_TYPE::TEXT, text});
+                }
             }
             pos = end_pos;
         }
