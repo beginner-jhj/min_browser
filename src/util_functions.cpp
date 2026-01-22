@@ -17,14 +17,7 @@ std::vector<std::string> split(std::string &s, const char delimiter)
 
 void skip_space(size_t &pos, const std::string &str)
 {
-    while (pos < str.size() && std::isspace(str[pos])) // isspace is awesome,
-    /*
-    - `' '`
-- `\n`
-- `\t`
-- `\r`
-isspace can find above things!
-    */
+    while (pos < str.size() && std::isspace(str[pos]))
     {
         ++pos;
     }
@@ -111,4 +104,28 @@ void normalize_whitespace(std::string &s)
         }
     }
     s = result;
+}
+
+QString resolve_url(const QString &base_url, const QString &relative_url)
+{
+    if (relative_url.isEmpty() || base_url.isEmpty())
+    {
+        return relative_url;
+    }
+    if (relative_url.startsWith("http://") ||
+        relative_url.startsWith("https://") ||
+        relative_url.startsWith("file://"))
+    {
+        return relative_url;
+    }
+
+    if (relative_url.startsWith("data:"))
+    {
+        return relative_url;
+    }
+
+    QUrl base(base_url);
+    QUrl resolved = base.resolved(QUrl(relative_url));
+
+    return resolved.toString();
 }

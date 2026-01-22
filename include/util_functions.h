@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <QUrl>
 
 std::vector<std::string> split(std::string& s,const char delimiter);
 void skip_space(size_t&pos, const std::string& str);
@@ -12,3 +13,5 @@ void trim(std::string& s);
 std::string trim_copy(std::string& s);
 std::vector<std::string> split_into_words(const std::string& text);
 void normalize_whitespace(std::string &s);
+
+QString resolve_url(const QString& base_url, const QString& relative_url);

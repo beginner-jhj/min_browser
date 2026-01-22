@@ -16,6 +16,7 @@ add_library(gui_lib
     include/gui/main_window.h 
     include/gui/header.h
     include/gui/renderer.h
+    include/gui/image_cache_manager.h
 )
 
 target_include_directories(gui_lib PUBLIC
@@ -56,7 +57,10 @@ target_include_directories(parsing_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(parsing_lib PUBLIC Qt6::Widgets)
+target_link_libraries(parsing_lib PUBLIC 
+    Qt6::Widgets 
+    Qt6::Network
+)
 
 # Enable testing
 enable_testing()

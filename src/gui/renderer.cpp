@@ -6,13 +6,15 @@
 #include <QResizeEvent>
 #include <queue>
 
-Renderer::Renderer(QWidget *parent) : QWidget(parent), m_root(nullptr), m_viewport_height(0), m_viewport_width(0) {}
+Renderer::Renderer(QWidget *parent) : QWidget(parent), m_root(nullptr), m_viewport_height(0), m_viewport_width(0), m_image_cache_manager(nullptr) {}
 
 float calculate_content_width(const LayoutBox &box);
 
-void Renderer::set_document(std::shared_ptr<Node> root)
+void Renderer::set_document(std::shared_ptr<Node> root, IMAGE_CACHE_MANAGER &image_cache_manager, const QString &base_url)
 {
     m_root = root;
+    m_base_url = base_url;
+    m_image_cache_manager = &image_cache_manager;
 
     if (m_root)
     {
@@ -89,7 +91,7 @@ void Renderer::recalculate_layout()
 
     LineState line(current_width);
 
-    m_layout_tree = create_layout_tree(m_root, current_width, line);
+    m_layout_tree = create_layout_tree(m_root, current_width, line, m_base_url, m_image_cache_manager);
     m_has_layout = true;
 
     float content_width = calculate_content_width(m_layout_tree);
@@ -130,6 +132,11 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
 
     if (box.node->get_type() == NODE_TYPE::ELEMENT)
     {
+        if (!box.image.isNull())
+        {
+            painter.drawPixmap(abs_x, abs_y, box.width, box.height, box.image);
+            return;
+        }
         if (box.style.background_color != QColor("transparent"))
         {
             painter.fillRect(
@@ -181,7 +188,8 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
             }
         }
 
-        if(parent_box && parent_box->node->get_tag_name() == "li"){
+        if (parent_box && parent_box->node->get_tag_name() == "li")
+        {
             painter.drawText(offset_x + box.x + offset_adjust, offset_y + box.y + metrics.ascent(), "•");
             offset_adjust += 15;
         }

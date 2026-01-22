@@ -6,6 +6,9 @@
 #include "gui/renderer.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <unordered_map>
+#include "gui/image_cache_manager.h"
+#include <QTimer>
 
 class MainWindow : public QMainWindow
 {
@@ -45,7 +48,7 @@ private:
     </html>
 )";
 
-std::string m_network_failed_html = R"(
+    std::string m_network_failed_html = R"(
 <!DOCTYPE html>
 <html>
 <head>
@@ -83,14 +86,19 @@ std::string m_network_failed_html = R"(
     Header *m_header;
     Renderer *m_renderer;
     QNetworkAccessManager *m_network_manager;
-
-    
+    IMAGE_CACHE_MANAGER m_image_cache_manager;
+    QTimer *m_reflow_timer;
+    std::shared_ptr<Node> m_cached_tree;
+    QString m_cached_base_url;
 
     void set_connections();
+    void request_reflow();
 
 public slots:
     void render_file(const QString &file_path);
     void fetch_url(const QString &url);
+    void download_image(QNetworkReply *reply);
+    void reflow();
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);

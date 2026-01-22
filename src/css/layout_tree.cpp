@@ -5,7 +5,7 @@
 LayoutBox create_layout_tree(
     std::shared_ptr<Node> root,
     float parent_width,
-    LineState &line)
+    LineState &line, const QString &base_url, IMAGE_CACHE_MANAGER *image_cache_manager)
 {
     LayoutBox box;
     box.node = root;
@@ -13,6 +13,89 @@ LayoutBox create_layout_tree(
 
     if (box.style.display == DISPLAY_TYPE::NONE)
     {
+        return box;
+    }
+
+    if (box.node->get_tag_name() == "img" && image_cache_manager != nullptr)
+    {
+        QString src = QString::fromStdString(box.node->get_attribute("src"));
+        if (src.isEmpty())
+            return box;
+
+        QString absolute_url = resolve_url(base_url, src);
+
+        QPixmap image;
+
+        if (absolute_url.startsWith("file://"))
+        {
+            QString local_path = QUrl(absolute_url).toLocalFile();
+            image.load(local_path);
+        }
+
+        else if (absolute_url.startsWith("http://") || absolute_url.startsWith("https://"))
+        {
+            auto image_it = image_cache_manager->image_cacher.find(absolute_url);
+            if (image_it != image_cache_manager->image_cacher.end() && !image_it->second.isNull())
+            {
+                image = image_it->second;
+            }
+            else
+            {
+                box.width = 0;
+                box.height = 0;
+                image_cache_manager->image_network_manager->get(QNetworkRequest(src));
+                image_cache_manager->src = absolute_url;
+                return box;
+            }
+        }
+
+        else if (absolute_url.startsWith("data:"))
+        {
+            int comma_index = absolute_url.indexOf(',');
+
+            if (comma_index != -1)
+            {
+                QString base64_encoded = absolute_url.mid(comma_index + 1);
+                QByteArray image_data = QByteArray::fromBase64(base64_encoded.toUtf8());
+
+                image.loadFromData(image_data);
+            }
+        }
+
+        if (!image.isNull())
+        {
+            if (box.style.width < 0 && box.style.height < 0)
+            {
+                box.width = image.width();
+                box.height = image.height();
+            }
+
+            else if (box.style.width > 0 && box.style.height < 0)
+            {
+                box.width = box.style.width;
+                box.height = box.width * image.height() / image.width();
+            }
+
+            else if (box.style.width < 0 && box.style.height > 0)
+            {
+                box.height = box.style.height;
+                box.width = box.height * image.width() / image.height();
+            }
+
+            else
+            {
+                box.width = box.style.width;
+                box.height = box.style.height;
+            }
+
+            box.image = image;
+
+            box.x = box.style.margin_left;
+            box.y = line.current_y + box.style.margin_top;
+
+            line.current_y = box.y + box.height + box.style.margin_bottom;
+        }
+
         return box;
     }
 
@@ -54,7 +137,7 @@ LayoutBox create_layout_tree(
             float child_parent_width = box.width -
                                        box.style.padding_left -
                                        box.style.padding_right;
-            LayoutBox child_box = create_layout_tree(child, child_parent_width, line);
+            LayoutBox child_box = create_layout_tree(child, child_parent_width, line, base_url, image_cache_manager);
 
             if (child_box.style.position == PositionType::Absolute)
             {
@@ -110,6 +193,20 @@ LayoutBox create_layout_tree(
                     content_y = inline_bottom;
                 }
             }
+
+            // if (child_box.style.display == DISPLAY_TYPE::BLOCK ||
+            //     child->get_tag_name() == "img")
+            // {
+
+            //     // Position vertically
+            //     child_box.x = child_box.style.margin_left + box.style.padding_left;
+            //     child_box.y = content_y + child_box.style.margin_top;
+
+            //     // Update content_y
+            //     content_y += child_box.height +
+            //                  child_box.style.margin_top +
+            //                  child_box.style.margin_bottom;
+            // }
 
             box.children.push_back(child_box);
         }
@@ -189,9 +286,7 @@ LayoutBox create_layout_tree(
 
         for (auto child : root->get_children())
         {
-            LayoutBox child_box = create_layout_tree(child, parent_width, line);
-            // child_box.x -= start_x;
-            // child_box.y -= start_y;
+            LayoutBox child_box = create_layout_tree(child, parent_width, line, base_url, image_cache_manager);
             box.children.push_back(child_box);
         }
 

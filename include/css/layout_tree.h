@@ -5,35 +5,41 @@
 #include <QFontMetrics>
 #include "html/node.h"
 #include "css/computed_style.h"
+#include <QPixmap>
+#include "gui/image_cache_manager.h"
 
-struct LineState {
+struct LineState
+{
     float current_x = 0;
     float current_y = 0;
     float line_height = 0;
     float max_width = 0;
     float padding_left = 0;
-    
+
     LineState(float width = 0) : max_width(width) {}
 };
 
-struct LayoutBox {
+struct LayoutBox
+{
     std::shared_ptr<Node> node;
     ComputedStyle style;
-    
+
     float x = 0;
     float y = 0;
     float width = 0;
     float height = 0;
-    
+
     std::vector<LayoutBox> children;
     std::string text;
 
     bool is_positioned = false;
     std::vector<LayoutBox> absolute_children;
+    QPixmap image;
 };
 
 LayoutBox create_layout_tree(
     std::shared_ptr<Node> root,
     float parent_width,
-    LineState& line
-);
+    LineState &line,
+    const QString &base_url,
+    IMAGE_CACHE_MANAGER *image_cache_manager);
