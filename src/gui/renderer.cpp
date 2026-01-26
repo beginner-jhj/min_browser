@@ -5,16 +5,38 @@
 #include <QScrollBar>
 #include <QResizeEvent>
 #include <queue>
+#include "util_functions.h"
 
-Renderer::Renderer(QWidget *parent) : QWidget(parent), m_root(nullptr), m_viewport_height(0), m_viewport_width(0), m_image_cache_manager(nullptr) {}
+Renderer::Renderer(QWidget *parent) : QWidget(parent), m_root(nullptr), m_viewport_height(0), m_viewport_width(0), m_image_cache_manager(nullptr), m_current_history_it(m_history_list.begin())
+{
+}
 
 float calculate_content_width(const LayoutBox &box);
 
 void Renderer::set_document(std::shared_ptr<Node> root, IMAGE_CACHE_MANAGER &image_cache_manager, const QString &base_url)
 {
+    m_image_cache_manager = &image_cache_manager;
+
+    if (m_history_list.size() > 0)
+    {
+        auto next_it = std::next(m_current_history_it);
+        if (next_it != m_history_list.end())
+        {
+            m_history_list.erase(next_it, m_history_list.end());
+        }
+    }
+
+    m_history_list.push_back({root, base_url});
+
+    m_current_history_it = std::prev(m_history_list.end());
+
+    render(root, base_url);
+}
+
+void Renderer::render(std::shared_ptr<Node> root, const QString &base_url)
+{
     m_root = root;
     m_base_url = base_url;
-    m_image_cache_manager = &image_cache_manager;
 
     if (m_root)
     {
@@ -353,4 +375,122 @@ float calculate_content_width(const LayoutBox &root)
     }
 
     return max_right - root.x;
+}
+
+void Renderer::mousePressEvent(QMouseEvent *event)
+{
+    float x = event->pos().x();
+    float y = event->pos().y();
+
+    auto clicked_node = find_node_at(x, y);
+    if (clicked_node)
+    {
+        std::string href = bubble_for_link(clicked_node);
+
+        if (!href.empty())
+        {
+            QString absolute_url = resolve_url(m_base_url, QString::fromStdString(href));
+            emit link_clicked(absolute_url);
+        }
+    }
+}
+
+std::shared_ptr<Node> Renderer::find_node_at(float x, float y)
+{
+    return find_node_in_box(m_layout_tree, x, y, 0, 0);
+}
+
+std::shared_ptr<Node> Renderer::find_node_in_box(const LayoutBox &box, float x, float y, float offset_x, float offset_y)
+{
+    float abs_x = offset_x + box.x;
+    float abs_y = offset_y + box.y;
+
+    if (box.style.position == PositionType::Relative)
+    {
+        abs_x += box.style.left - box.style.right;
+        abs_y += box.style.top - box.style.bottom;
+    }
+
+    // FIRST: Always check children, regardless of this box's bounds
+    // Why: For inline elements, parent box might be (0,0) but children have real positions
+    for (const auto &child : box.children)
+    {
+        auto result = find_node_in_box(child, x, y, abs_x, abs_y);
+        if (result)
+        {
+            return result;
+        }
+    }
+
+    for (const auto &abs_child : box.absolute_children)
+    {
+        if (abs_child.style.position == PositionType::Fixed)
+        {
+            continue;
+        }
+        auto result = find_node_in_box(abs_child, x, y, abs_x, abs_y);
+        if (result)
+        {
+            return result;
+        }
+    }
+
+    // THEN: Check if click is inside this box's bounds
+    bool inside = (x >= abs_x && x <= abs_x + box.width &&
+                   y >= abs_y && y <= abs_y + box.height);
+
+    if (!inside)
+    {
+        return nullptr;
+    }
+
+    // If no children matched and we're inside, return this node
+    if (box.node)
+    {
+        return box.node;
+    }
+
+    return nullptr;
+}
+
+std::string Renderer::bubble_for_link(std::shared_ptr<Node> node)
+{
+    std::shared_ptr<Node> current = node;
+
+    while (current)
+    {
+        if (current->get_tag_name() == "a")
+        {
+            std::string href = current->get_attribute("href");
+            if (!href.empty())
+            {
+                return href;
+            }
+        }
+
+        current = current->get_parent();
+    }
+
+    return "";
+}
+
+void Renderer::go_back()
+{
+    if (m_current_history_it != m_history_list.begin())
+    {
+        m_current_history_it = std::prev(m_current_history_it);
+        PAGE current_page = *m_current_history_it;
+        render(current_page.page_root, current_page.base_url);
+    }
+}
+
+void Renderer::go_forward()
+{
+    auto next_it = std::next(m_current_history_it);
+    if (next_it != m_history_list.end())
+    {
+        m_current_history_it = next_it;
+        PAGE current_page = *m_current_history_it;
+        render(current_page.page_root, current_page.base_url);
+    }
 }

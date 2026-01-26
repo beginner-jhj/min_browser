@@ -8,6 +8,8 @@ class Header: public QWidget{
 
 
     private:
+        QPushButton *m_back_button;
+        QPushButton *m_forward_button;
         QPushButton *m_file_open_button;
         QComboBox *m_url_dropdown;
         QPushButton *m_go_button;
@@ -21,6 +23,8 @@ class Header: public QWidget{
         void url_selected(const QString& url);
         void file_selected(const QString& file_path);
         void reset();
+        void back_clicked();
+        void forward_clicked();
     
     public:
         Header(QWidget *parent=nullptr);

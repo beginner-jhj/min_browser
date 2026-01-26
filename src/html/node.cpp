@@ -1,5 +1,4 @@
 #include "html/node.h"
-#include <QDebug>
 
 Node::Node(NODE_TYPE t, const std::string &content) : m_type(t)
 {
@@ -18,6 +17,8 @@ Node::Node(NODE_TYPE t, const std::string &content) : m_type(t)
 void Node::add_child(std::shared_ptr<Node> child)
 {
     m_children.push_back(child);
+
+    child->set_parent(shared_from_this());
 }
 
 const std::string Node::get_tag_name() const
@@ -91,19 +92,16 @@ void Node::set_style(const std::string &name, const std::string &value)
     }
 }
 
-// std::string Node::get_style(const std::string &property) const
-// {
-// }
-
 ComputedStyle Node::get_all_styles() const
 {
     return m_computed_style;
 }
 
-void Node::set_rect(float x, float y, float width, float height)
+void Node::set_parent(std::weak_ptr<Node> parent)
 {
-    m_rect.setX(x);
-    m_rect.setY(y);
-    m_rect.setWidth(width);
-    m_rect.setHeight(height);
+    m_parent = parent;
+}
+
+std::shared_ptr<Node> Node::get_parent() const {
+    return m_parent.lock();
 }

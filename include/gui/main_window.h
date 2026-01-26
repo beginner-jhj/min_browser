@@ -99,6 +99,7 @@ public slots:
     void fetch_url(const QString &url);
     void download_image(QNetworkReply *reply);
     void reflow();
+    void navigate(const QString &link);
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);

@@ -57,8 +57,13 @@ void MainWindow::set_connections()
         m_cached_tree = create_tree(m_init_html);
         m_renderer->set_document(m_cached_tree, m_image_cache_manager); });
     connect(m_header, &Header::url_selected, this, &MainWindow::fetch_url);
+    connect(m_header, &Header::back_clicked, m_renderer, &Renderer::go_back);
+    connect(m_header, &Header::forward_clicked, m_renderer, &Renderer::go_forward);
     connect(m_image_cache_manager.image_network_manager, &QNetworkAccessManager::finished, this, &MainWindow::download_image);
     connect(m_reflow_timer, &QTimer::timeout, this, &MainWindow::reflow);
+
+    connect(m_renderer, &Renderer::link_clicked, this, &MainWindow::navigate);
+
 }
 
 void MainWindow::render_file(const QString &file_path)
@@ -66,7 +71,10 @@ void MainWindow::render_file(const QString &file_path)
     if (file_path.isEmpty())
         return;
 
-    QFile file(file_path);
+    QUrl url(file_path);
+    QString local_path = url.isLocalFile() ? url.toLocalFile() : file_path;
+
+    QFile file(local_path);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -76,7 +84,7 @@ void MainWindow::render_file(const QString &file_path)
     QByteArray data = file.readAll();
     QString html_content = QString::fromUtf8(data);
 
-    QFileInfo file_info(file_path);
+    QFileInfo file_info(local_path);
     m_cached_base_url = QUrl::fromLocalFile(
                             file_info.absolutePath() + "/")
                             .toString();
@@ -109,7 +117,6 @@ void MainWindow::fetch_url(const QString &url)
             }
             m_renderer->set_document(m_cached_tree, m_image_cache_manager ,m_cached_base_url);
         } else {
-            qDebug() << "Error:" << reply->errorString();
             auto tree = create_tree(m_network_failed_html);
             m_renderer->set_document(tree, m_image_cache_manager);
         }
@@ -137,4 +144,17 @@ void MainWindow::request_reflow()
 void MainWindow::reflow()
 {
     m_renderer->set_document(m_cached_tree, m_image_cache_manager, m_cached_base_url);
+}
+
+void MainWindow::navigate(const QString &link)
+{
+    if (link.startsWith("file://"))
+    {
+        render_file(link);
+    }
+
+    else if (link.startsWith("http://") || link.startsWith("https://"))
+    {
+        fetch_url(link);
+    }
 }

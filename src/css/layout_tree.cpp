@@ -1,5 +1,4 @@
 #include "css/layout_tree.h"
-#include <QDebug>
 #include "util_functions.h"
 
 LayoutBox create_layout_tree(
@@ -114,7 +113,6 @@ LayoutBox create_layout_tree(
     {
         if (box.style.width > 0)
         {
-            // qDebug() << "Assigned width: " << box.style.width;
             box.width = box.style.width;
         }
         else
@@ -194,20 +192,6 @@ LayoutBox create_layout_tree(
                 }
             }
 
-            // if (child_box.style.display == DISPLAY_TYPE::BLOCK ||
-            //     child->get_tag_name() == "img")
-            // {
-
-            //     // Position vertically
-            //     child_box.x = child_box.style.margin_left + box.style.padding_left;
-            //     child_box.y = content_y + child_box.style.margin_top;
-
-            //     // Update content_y
-            //     content_y += child_box.height +
-            //                  child_box.style.margin_top +
-            //                  child_box.style.margin_bottom;
-            // }
-
             box.children.push_back(child_box);
         }
 
@@ -233,16 +217,10 @@ LayoutBox create_layout_tree(
 
         for (auto &word : words)
         {
-
             int word_width = metrics.horizontalAdvance(QString::fromStdString(word));
             int word_height = metrics.height();
 
-            // qDebug() << "word_text: " << word;
-            // qDebug() << "line.current_x + word_width = " << line.current_x << " + " << word_width << " = " << line.current_x +word_width;
-            // qDebug() << "max_width: " << line.max_width;
             bool will_wrap = (line.current_x + word_width > line.max_width) && line.current_x > 0;
-
-            // qDebug() << "will_wrap: " << will_wrap;
 
             if (will_wrap)
             {
@@ -281,9 +259,16 @@ LayoutBox create_layout_tree(
 
     if (box.style.display == DISPLAY_TYPE::INLINE)
     {
+        // Step 1: Apply left spacing (margin + padding)
+        // Why: Create space before inline element content
+        float left_spacing = box.style.margin_left + box.style.padding_left;
+        line.current_x += left_spacing;
+
         float start_x = line.current_x;
         float start_y = line.current_y;
+        float start_line_height = line.line_height;
 
+        // Step 2: Process children (text, nested inlines, etc.)
         for (auto child : root->get_children())
         {
             LayoutBox child_box = create_layout_tree(child, parent_width, line, base_url, image_cache_manager);
@@ -291,12 +276,30 @@ LayoutBox create_layout_tree(
         }
 
         float end_x = line.current_x;
-        float max_height = line.line_height;
 
+        // Step 3: Apply right spacing (padding + margin)
+        // Why: Create space after inline element content
+        float right_spacing = box.style.padding_right + box.style.margin_right;
+        line.current_x += right_spacing;
+
+        // Step 4: Calculate height with padding
+        // Why: Vertical padding affects line height (margin doesn't)
+        float content_height = line.line_height - start_line_height;
+        float total_height = content_height + box.style.padding_top + box.style.padding_bottom;
+
+        // Update line height if this inline element is taller
+        if (total_height > line.line_height)
+        {
+            line.line_height = total_height;
+        }
+
+        // Step 5: Set box dimensions
+        // Position (0,0) because actual position is in children
+        // Why: Inline elements can span multiple lines
         box.y = 0;
         box.x = 0;
-        box.width = end_x - start_x;
-        box.height = max_height;
+        box.width = end_x - start_x; // Content width only (no spacing)
+        box.height = total_height;
 
         return box;
     }

@@ -10,7 +10,7 @@ enum class NODE_TYPE{
     ELEMENT,TEXT
 };
 
-class Node{
+class Node: public std::enable_shared_from_this<Node>{
     private:
         NODE_TYPE m_type;
         std::string m_tag_name;
@@ -18,8 +18,9 @@ class Node{
 
         std::vector<std::shared_ptr<Node>> m_children;
         std::map<std::string, std::string> m_attributes;
-        QRectF m_rect;
         ComputedStyle m_computed_style;
+
+        std::weak_ptr<Node> m_parent;
 
 
     public:
@@ -29,11 +30,10 @@ class Node{
         void set_attribute(const std::string& name, const std::string& value);
         std::string get_attribute(const std::string& name) const;
 
-        void set_style(const std::string& name, const std::string& value);
-        std::string get_style(const std::string& property) const;
-        ComputedStyle get_all_styles() const;
+        void set_parent(std::weak_ptr<Node> parent);
 
-        void set_rect(float x, float y, float width, float height);
+        void set_style(const std::string& name, const std::string& value);
+        ComputedStyle get_all_styles() const;
 
         const std::string get_tag_name() const;
         const std::string get_text_content() const;
@@ -41,5 +41,5 @@ class Node{
         const DISPLAY_TYPE get_display_type() const;
 
         const std::vector<std::shared_ptr<Node>>& get_children() const;
-
+        std::shared_ptr<Node> get_parent() const ;
 };

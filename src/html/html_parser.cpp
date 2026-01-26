@@ -69,6 +69,7 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
 
         if (token.type == TOKEN_TYPE::START_TAG)
         {
+            bool is_void_token = void_elements.find(token.value) != void_elements.end();
             std::shared_ptr<Node> new_node = create_node(token);
             if (!stack.empty())
             {
@@ -78,7 +79,7 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
             {
                 root = new_node;
             }
-            if(void_elements.find(token.value) == void_elements.end()){
+            if(!is_void_token){
                 stack.push_back(new_node);
             }
             continue;
