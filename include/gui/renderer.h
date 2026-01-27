@@ -10,7 +10,7 @@
 
 struct PAGE
 {
-    std::shared_ptr<Node> page_root;
+    std::shared_ptr<NODE> page_root;
     QString base_url;
 };
 
@@ -19,27 +19,27 @@ class Renderer : public QWidget
 {
     Q_OBJECT
 private:
-    std::shared_ptr<Node> m_root;
+    std::shared_ptr<NODE> m_root;
     CSSOM m_cssom;
     int m_viewport_width, m_viewport_height;
 
-    void paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box = nullptr);
-    void paint_fixed(QPainter &painter, const LayoutBox &box);
+    void paint_layout(QPainter &painter, const LAYOUT_BOX &box, float offset_x, float offset_y, const LAYOUT_BOX *parent_box = nullptr);
+    void paint_fixed(QPainter &painter, const LAYOUT_BOX &box);
     void recalculate_layout();
-    LayoutBox m_layout_tree;
+    LAYOUT_BOX m_layout_tree;
     bool m_has_layout = false;
     IMAGE_CACHE_MANAGER *m_image_cache_manager;
 
     QString m_base_url;
 
-    std::shared_ptr<Node> find_node_at(float x, float y);
-    std::shared_ptr<Node> find_node_in_box(const LayoutBox& box, float x, float y, float offset_x, float offset_y);
-    std::string bubble_for_link(std::shared_ptr<Node> node);
+    std::shared_ptr<NODE> find_node_at(float x, float y);
+    std::shared_ptr<NODE> find_node_in_box(const LAYOUT_BOX& box, float x, float y, float offset_x, float offset_y);
+    std::string bubble_for_link(std::shared_ptr<NODE> node);
 
     std::list<PAGE> m_history_list;
     std::list<PAGE>::iterator m_current_history_it;
 
-    void render(std::shared_ptr<Node> root, const QString &base_url);
+    void render(std::shared_ptr<NODE> root, const QString &base_url);
 
 signals:
     void link_clicked(const QString &link);
@@ -56,5 +56,5 @@ public slots:
 
 public:
     explicit Renderer(QWidget *parent = nullptr);
-    void set_document(std::shared_ptr<Node> root, IMAGE_CACHE_MANAGER &image_cache_manager, const QString &base_url = "");
+    void set_document(std::shared_ptr<NODE> root, IMAGE_CACHE_MANAGER &image_cache_manager, const QString &base_url = "");
 };

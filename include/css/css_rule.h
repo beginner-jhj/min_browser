@@ -2,16 +2,16 @@
 #include <string>
 #include <vector>
 
-struct Decelaration
+struct DECLARATION
 {
     std::string property;
     std::string value;
 };
 
-struct CssRule
+struct CSS_RULE
 {
     std::string selector;
-    std::vector<Decelaration> declarations;
+    std::vector<DECLARATION> declarations;
 
-    CssRule(std::string& s):selector(s){}
+    CSS_RULE(std::string& s):selector(s){}
 };

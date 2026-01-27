@@ -3,11 +3,21 @@
 #include <QDebug>
 #include <sstream>
 
-std::unordered_map<std::string, ComputedStyle::Setter> ComputedStyle::setters;
+std::unordered_map<std::string, COMPUTED_STYLE::Setter> COMPUTED_STYLE::setters;
 
 static bool initialized = false;
 
-void ComputedStyle::init_setters()
+/**
+ * \brief Initializes the CSS property setters for COMPUTED_STYLE.
+ *
+ * Creates and populates the static setters map with lambda functions that handle
+ * CSS property assignments. Supports properties including font, color, spacing,
+ * borders, display, positioning, and text styling. Each setter parses the CSS value
+ * string and applies it to the COMPUTED_STYLE member variable.
+ *
+ * Only initializes once; subsequent calls are no-ops due to initialization guard.
+ */
+void COMPUTED_STYLE::init_setters()
 {
     if (initialized)
         return;
@@ -15,29 +25,29 @@ void ComputedStyle::init_setters()
 
     setters.clear();
 
-    setters["color"] = [](ComputedStyle &s, const std::string &value)
+    setters["color"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.color = parse_color(value);
+        style.color = parse_color(value);
     };
 
-    setters["font-size"] = [](ComputedStyle &s, const std::string &value)
+    setters["font-size"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.font_size = parse_font_size(value);
+        style.font_size = parse_font_size(value);
     };
 
-    setters["font-weight"] = [](ComputedStyle &s, const std::string &value)
+    setters["font-weight"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         try
         {
             if (value == "normal")
             {
-                s.font_weight = QFont::Normal;
+                style.font_weight = QFont::Normal;
                 return;
             }
 
             if (value == "bold")
             {
-                s.font_weight = QFont::Bold;
+                style.font_weight = QFont::Bold;
                 return;
             }
             int weight = std::stoi(value);
@@ -48,106 +58,106 @@ void ComputedStyle::init_setters()
 
                 if (adjusted_weight <= 100)
                 {
-                    s.font_weight = QFont::Thin;
+                    style.font_weight = QFont::Thin;
                 }
 
                 else if (adjusted_weight == 200)
                 {
-                    s.font_weight = QFont::ExtraLight;
+                    style.font_weight = QFont::ExtraLight;
                 }
 
                 else if (adjusted_weight == 300)
                 {
-                    s.font_weight = QFont::Light;
+                    style.font_weight = QFont::Light;
                 }
 
                 else if (adjusted_weight == 400)
                 {
-                    s.font_weight = QFont::Normal;
+                    style.font_weight = QFont::Normal;
                 }
 
                 else if (adjusted_weight == 500)
                 {
-                    s.font_weight = QFont::Medium;
+                    style.font_weight = QFont::Medium;
                 }
 
                 else if (adjusted_weight == 600)
                 {
-                    s.font_weight = QFont::DemiBold;
+                    style.font_weight = QFont::DemiBold;
                 }
 
                 else if (adjusted_weight == 700)
                 {
-                    s.font_weight = QFont::Bold;
+                    style.font_weight = QFont::Bold;
                 }
 
                 else if (adjusted_weight == 800)
                 {
-                    s.font_weight = QFont::ExtraBold;
+                    style.font_weight = QFont::ExtraBold;
                 }
 
                 else if (adjusted_weight >= 900)
                 {
-                    s.font_weight = QFont::Black;
+                    style.font_weight = QFont::Black;
                 }
             }
             else
             {
-                s.font_weight = QFont::Normal;
+                style.font_weight = QFont::Normal;
             }
         }
         catch (...)
         {
-            s.font_weight = QFont::Normal;
+            style.font_weight = QFont::Normal;
         }
     };
 
-    setters["font-style"] = [](ComputedStyle &s, const std::string &value)
+    setters["font-style"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.font_style = value;
+        style.font_style = value;
     };
 
-    setters["font-family"] = [](ComputedStyle &s, const std::string &value)
+    setters["font-family"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.font_family = QString::fromStdString(value);
+        style.font_family = QString::fromStdString(value);
     };
 
-    setters["background-color"] = [](ComputedStyle &s, const std::string &value)
+    setters["background-color"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.background_color = parse_color(value);
+        style.background_color = parse_color(value);
     };
 
-    setters["width"] = [](ComputedStyle &s, const std::string &value)
+    setters["width"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.width = parse_string_to_float(value, -1);
+        style.width = parse_string_to_float(value, -1);
     };
 
-    setters["height"] = [](ComputedStyle &s, const std::string &value)
+    setters["height"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.height = parse_string_to_float(value, -1);
+        style.height = parse_string_to_float(value, -1);
     };
 
-    setters["margin-top"] = [](ComputedStyle &s, const std::string &value)
+    setters["margin-top"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.margin_top = parse_string_to_float(value, 0);
+        style.margin_top = parse_string_to_float(value, 0);
     };
 
-    setters["margin-bottom"] = [](ComputedStyle &s, const std::string &value)
+    setters["margin-bottom"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.margin_bottom = parse_string_to_float(value, 0);
+        style.margin_bottom = parse_string_to_float(value, 0);
     };
 
-    setters["margin-left"] = [](ComputedStyle &s, const std::string &value)
+    setters["margin-left"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.margin_left = parse_string_to_float(value, 0);
+        style.margin_left = parse_string_to_float(value, 0);
     };
 
-    setters["margin-right"] = [](ComputedStyle &s, const std::string &value)
+    setters["margin-right"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.margin_right = parse_string_to_float(value, 0);
+        style.margin_right = parse_string_to_float(value, 0);
     };
 
-    setters["margin"] = [](ComputedStyle &s, const std::string &value)
+    setters["margin"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         std::vector<std::string> parts;
         std::stringstream ss(value);
@@ -162,20 +172,20 @@ void ComputedStyle::init_setters()
         {
             // margin: 10px → all sides
             float val = parse_string_to_float(parts[0], 0);
-            s.margin_top = val;
-            s.margin_right = val;
-            s.margin_bottom = val;
-            s.margin_left = val;
+            style.margin_top = val;
+            style.margin_right = val;
+            style.margin_bottom = val;
+            style.margin_left = val;
         }
         else if (parts.size() == 2)
         {
             // margin: 10px 20px → vertical horizontal
             float vertical = parse_string_to_float(parts[0], 0);
             float horizontal = parse_string_to_float(parts[1], 0);
-            s.margin_top = vertical;
-            s.margin_bottom = vertical;
-            s.margin_left = horizontal;
-            s.margin_right = horizontal;
+            style.margin_top = vertical;
+            style.margin_bottom = vertical;
+            style.margin_left = horizontal;
+            style.margin_right = horizontal;
         }
         else if (parts.size() == 3)
         {
@@ -183,42 +193,42 @@ void ComputedStyle::init_setters()
             float top = parse_string_to_float(parts[0], 0);
             float horizontal = parse_string_to_float(parts[1], 0);
             float bottom = parse_string_to_float(parts[2], 0);
-            s.margin_top = top;
-            s.margin_right = horizontal;
-            s.margin_bottom = bottom;
-            s.margin_left = horizontal;
+            style.margin_top = top;
+            style.margin_right = horizontal;
+            style.margin_bottom = bottom;
+            style.margin_left = horizontal;
         }
         else if (parts.size() >= 4)
         {
             // margin: 10px 20px 30px 40px → top right bottom left
-            s.margin_top = parse_string_to_float(parts[0], 0);
-            s.margin_right = parse_string_to_float(parts[1], 0);
-            s.margin_bottom = parse_string_to_float(parts[2], 0);
-            s.margin_left = parse_string_to_float(parts[3], 0);
+            style.margin_top = parse_string_to_float(parts[0], 0);
+            style.margin_right = parse_string_to_float(parts[1], 0);
+            style.margin_bottom = parse_string_to_float(parts[2], 0);
+            style.margin_left = parse_string_to_float(parts[3], 0);
         }
     };
 
-    setters["padding-top"] = [](ComputedStyle &s, const std::string &value)
+    setters["padding-top"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.padding_top = parse_string_to_float(value, 0);
+        style.padding_top = parse_string_to_float(value, 0);
     };
 
-    setters["padding-bottom"] = [](ComputedStyle &s, const std::string &value)
+    setters["padding-bottom"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.padding_bottom = parse_string_to_float(value, 0);
+        style.padding_bottom = parse_string_to_float(value, 0);
     };
 
-    setters["padding-left"] = [](ComputedStyle &s, const std::string &value)
+    setters["padding-left"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.padding_left = parse_string_to_float(value, 0);
+        style.padding_left = parse_string_to_float(value, 0);
     };
 
-    setters["padding-right"] = [](ComputedStyle &s, const std::string &value)
+    setters["padding-right"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.padding_right = parse_string_to_float(value, 0);
+        style.padding_right = parse_string_to_float(value, 0);
     };
 
-    setters["padding"] = [](ComputedStyle &s, const std::string &value)
+    setters["padding"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         // Split by whitespace
         std::vector<std::string> parts;
@@ -234,20 +244,20 @@ void ComputedStyle::init_setters()
         {
             // padding: 10px → all sides
             float val = parse_string_to_float(parts[0], 0);
-            s.padding_top = val;
-            s.padding_right = val;
-            s.padding_bottom = val;
-            s.padding_left = val;
+            style.padding_top = val;
+            style.padding_right = val;
+            style.padding_bottom = val;
+            style.padding_left = val;
         }
         else if (parts.size() == 2)
         {
             // padding: 10px 20px → vertical horizontal
             float vertical = parse_string_to_float(parts[0], 0);
             float horizontal = parse_string_to_float(parts[1], 0);
-            s.padding_top = vertical;
-            s.padding_bottom = vertical;
-            s.padding_left = horizontal;
-            s.padding_right = horizontal;
+            style.padding_top = vertical;
+            style.padding_bottom = vertical;
+            style.padding_left = horizontal;
+            style.padding_right = horizontal;
         }
         else if (parts.size() == 3)
         {
@@ -255,55 +265,55 @@ void ComputedStyle::init_setters()
             float top = parse_string_to_float(parts[0], 0);
             float horizontal = parse_string_to_float(parts[1], 0);
             float bottom = parse_string_to_float(parts[2], 0);
-            s.padding_top = top;
-            s.padding_right = horizontal;
-            s.padding_bottom = bottom;
-            s.padding_left = horizontal;
+            style.padding_top = top;
+            style.padding_right = horizontal;
+            style.padding_bottom = bottom;
+            style.padding_left = horizontal;
         }
         else if (parts.size() >= 4)
         {
             // padding: 10px 20px 30px 40px → top right bottom left
-            s.padding_top = parse_string_to_float(parts[0], 0);
-            s.padding_right = parse_string_to_float(parts[1], 0);
-            s.padding_bottom = parse_string_to_float(parts[2], 0);
-            s.padding_left = parse_string_to_float(parts[3], 0);
+            style.padding_top = parse_string_to_float(parts[0], 0);
+            style.padding_right = parse_string_to_float(parts[1], 0);
+            style.padding_bottom = parse_string_to_float(parts[2], 0);
+            style.padding_left = parse_string_to_float(parts[3], 0);
         }
     };
 
-    setters["border-width"] = [](ComputedStyle &s, const std::string &value)
+    setters["border-width"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.border_width = parse_string_to_float(value, 0);
+        style.border_width = parse_string_to_float(value, 0);
     };
 
-    setters["border-color"] = [](ComputedStyle &s, const std::string &value)
+    setters["border-color"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.border_color = parse_color(value);
+        style.border_color = parse_color(value);
     };
 
-    setters["border-style"] = [](ComputedStyle &s, const std::string &value)
+    setters["border-style"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         if (value == "solid")
         {
-            s.border_style = Qt::SolidLine;
+            style.border_style = Qt::SolidLine;
         }
 
         else if (value == "dashed")
         {
-            s.border_style = Qt::DashLine;
+            style.border_style = Qt::DashLine;
         }
 
         else if (value == "dotted")
         {
-            s.border_style = Qt::DotLine;
+            style.border_style = Qt::DotLine;
         }
 
         else
         {
-            s.border_style = Qt::NoPen;
+            style.border_style = Qt::NoPen;
         }
     };
 
-    setters["border"] = [](ComputedStyle &s, const std::string &value)
+    setters["border"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         std::vector<std::string> parts;
         std::stringstream ss(value);
@@ -321,177 +331,186 @@ void ComputedStyle::init_setters()
             // Check if it's a number (width)
             if (std::isdigit(p[0]))
             {
-                s.border_width = parse_string_to_float(p, 0);
+                style.border_width = parse_string_to_float(p, 0);
             }
             // Check if it's a style keyword
             else if (p == "solid")
             {
-                s.border_style = Qt::SolidLine;
+                style.border_style = Qt::SolidLine;
             }
             else if (p == "dashed")
             {
-                s.border_style = Qt::DashLine;
+                style.border_style = Qt::DashLine;
             }
             else if (p == "dotted")
             {
-                s.border_style = Qt::DotLine;
+                style.border_style = Qt::DotLine;
             }
             // Otherwise it's a color
             else
             {
-                s.border_color = parse_color(p);
+                style.border_color = parse_color(p);
             }
         }
     };
 
-    setters["display"] = [](ComputedStyle &s, const std::string &value)
+    setters["display"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         if (value == "inline")
         {
-            s.display = DISPLAY_TYPE::INLINE;
+            style.display = DISPLAY_TYPE::INLINE;
         }
 
         else if (value == "block")
         {
-            s.display = DISPLAY_TYPE::BLOCK;
+            style.display = DISPLAY_TYPE::BLOCK;
         }
 
         else
         {
-            s.display = DISPLAY_TYPE::NONE;
+            style.display = DISPLAY_TYPE::NONE;
         }
     };
 
-    setters["box-sizing"] = [](ComputedStyle &s, const std::string &value)
+    setters["box-sizing"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         if (value == "border-box")
         {
-            s.box_sizing = BoxSizing::BorderBox;
+            style.box_sizing = BOX_SIZING::BorderBox;
         }
         else
         {
-            s.box_sizing = BoxSizing::ContentBox;
+            style.box_sizing = BOX_SIZING::ContentBox;
         }
     };
 
-    setters["text-align"] = [](ComputedStyle &s, const std::string &value)
+    setters["text-align"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         if (value == "center")
         {
-            s.text_align = TextAlign::Center;
+            style.text_align = TEXT_ALIGN::Center;
         }
 
         else if (value == "right")
         {
-            s.text_align = TextAlign::Right;
+            style.text_align = TEXT_ALIGN::Right;
         }
 
         else if (value == "justify")
         {
-            s.text_align = TextAlign::Justify;
+            style.text_align = TEXT_ALIGN::Justify;
         }
 
         else
         {
-            s.text_align = TextAlign::Left;
+            style.text_align = TEXT_ALIGN::Left;
         }
     };
 
-    setters["line-height"] = [](ComputedStyle &s, const std::string &value)
+    setters["line-height"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.line_height = parse_string_to_float(value, 16 * 1.5);
+        style.line_height = parse_string_to_float(value, 16 * 1.5);
     };
 
-    setters["visibility"] = [](ComputedStyle &s, const std::string &value)
+    setters["visibility"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         if (value == "hidden" || value == "collapse")
         {
-            s.visibility = false;
+            style.visibility = false;
         }
         else
         {
-            s.visibility = true;
+            style.visibility = true;
         }
     };
 
-    setters["text-decoration"] = [](ComputedStyle &s, const std::string &value)
+    setters["text-decoration"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         if (value == "underline")
         {
-            s.text_decoration = TextDecoration::UnderLine;
+            style.text_decoration = TEXT_DECORATION::UnderLine;
         }
 
         else if (value == "line-through")
         {
-            s.text_decoration = TextDecoration::LineThrough;
+            style.text_decoration = TEXT_DECORATION::LineThrough;
         }
 
         else if (value == "overline")
         {
-            s.text_decoration = TextDecoration::OverLine;
+            style.text_decoration = TEXT_DECORATION::OverLine;
         }
 
         else
         {
-            s.text_decoration = TextDecoration::None;
+            style.text_decoration = TEXT_DECORATION::None;
         }
     };
 
-    setters["opacity"] = [](ComputedStyle &s, const std::string &value)
+    setters["opacity"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.opacity = parse_string_to_float(value, 1);
-        if (s.opacity < 0.0)
-            s.opacity = 0.0;
-        if (s.opacity > 1.0)
-            s.opacity = 1.0;
+        style.opacity = parse_string_to_float(value, 1);
+        if (style.opacity < 0.0)
+            style.opacity = 0.0;
+        if (style.opacity > 1.0)
+            style.opacity = 1.0;
     };
 
-    setters["position"] = [](ComputedStyle &s, const std::string &value)
+    setters["position"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
         if (value == "relative")
         {
-            s.position = PositionType::Relative;
+            style.position = POSITION_TYPE::Relative;
         }
         else if (value == "absolute")
         {
-            s.position = PositionType::Absolute;
+            style.position = POSITION_TYPE::Absolute;
         }
         else if (value == "fixed")
         {
-            s.position = PositionType::Fixed;
+            style.position = POSITION_TYPE::Fixed;
         }
         else
         {
-            s.position = PositionType::Static;
+            style.position = POSITION_TYPE::Static;
         }
     };
 
-    setters["top"] = [](ComputedStyle &s, const std::string &value)
+    setters["top"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.top = parse_string_to_float(value, 0);
-        s.is_top_set = true;
+        style.top = parse_string_to_float(value, 0);
+        style.is_top_set = true;
     };
 
-    setters["right"] = [](ComputedStyle &s, const std::string &value)
+    setters["right"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.right = parse_string_to_float(value, 0);
-        s.is_right_set = true;
+        style.right = parse_string_to_float(value, 0);
+        style.is_right_set = true;
     };
 
-    setters["bottom"] = [](ComputedStyle &s, const std::string &value)
+    setters["bottom"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.bottom = parse_string_to_float(value, 0);
-        s.is_bottom_set = true;
+        style.bottom = parse_string_to_float(value, 0);
+        style.is_bottom_set = true;
     };
 
-    setters["left"] = [](ComputedStyle &s, const std::string &value)
+    setters["left"] = [](COMPUTED_STYLE &style, const std::string &value)
     {
-        s.left = parse_string_to_float(value, 0);
-        s.is_left_set = true;
+        style.left = parse_string_to_float(value, 0);
+        style.is_left_set = true;
     };
 }
-
-QColor ComputedStyle::parse_color(const std::string &color_value)
+/**
+ * \brief Parses a CSS color value string into a QColor object.
+ *
+ * Handles both named colors and RGB/RGBA formats. Named colors are passed directly
+ * to QColor for interpretation. RGB format (e.g., "rgb(255,128,0)") is parsed by
+ * extracting numeric values and converting to QColor. RGBA format includes an alpha
+ * channel (opacity) that is scaled from 0-1 to 0-255.
+ *
+ * \param color_value The color string to parse (e.g., "red", "rgb(255,0,0)", "rgba(255,0,0,0.5)").
+ * \return A QColor object representing the parsed color.
+ */QColor COMPUTED_STYLE::parse_color(const std::string &color_value)
 {
     if (color_value.size() <= 3)
     {
@@ -534,7 +553,18 @@ QColor ComputedStyle::parse_color(const std::string &color_value)
     return QColor(values[0], values[1], values[2]);
 }
 
-int ComputedStyle::parse_font_size(const std::string &value)
+/**
+ * \brief Parses a CSS font-size value string into pixel units.
+ *
+ * Converts font-size values from various CSS units (px, pt, cm, mm, in) and
+ * CSS keywords (xx-small through xx-large) into pixel values. Uses standard
+ * conversion factors (1in = 96px = 2.54cm). Returns 16px as the default/medium
+ * font size if parsing fails.
+ *
+ * \param value The font-size value string (e.g., "14px", "medium", "1.5cm").
+ * \return The font size in pixels as an integer.
+ */
+int COMPUTED_STYLE::parse_font_size(const std::string &value)
 /* 1in = 96px = 2.54cm = 25.4mm
     96/2.54 is about 37.8px
 */
@@ -622,7 +652,18 @@ int ComputedStyle::parse_font_size(const std::string &value)
     }
 }
 
-float ComputedStyle::parse_string_to_float(const std::string &value, const float default_value)
+/**
+ * \brief Parses a CSS numeric value string with units into a float.
+ *
+ * Converts string representations of numbers (with or without units) into
+ * floating-point values. Handles invalid input gracefully by returning the
+ * provided default value.
+ *
+ * \param value The numeric string to parse (e.g., "10px", "15.5").
+ * \param default_value The value to return if parsing fails.
+ * \return The parsed float value, or default_value on error.
+ */
+float COMPUTED_STYLE::parse_string_to_float(const std::string &value, const float default_value)
 {
     try
     {
@@ -635,18 +676,42 @@ float ComputedStyle::parse_string_to_float(const std::string &value, const float
     }
 }
 
-std::string ComputedStyle::inherit_color() const
+/**
+ * \brief Returns the inherited color value as a hex string.
+ *
+ * Converts the QColor member to its hexadecimal string representation for
+ * use in CSS inheritance to child elements.
+ *
+ * \return The color as a hex string (e.g., "#ff0000").
+ */
+std::string COMPUTED_STYLE::inherit_color() const
 {
     QString color_hex_name = color.name();
     return color_hex_name.toStdString();
 }
 
-std::string ComputedStyle::inherit_font_size() const
+/**
+ * \brief Returns the inherited font-size value as a string.
+ *
+ * Converts the font_size member (in pixels) to its string representation
+ * for inheritance to child elements.
+ *
+ * \return The font size as a string (e.g., "14").
+ */
+std::string COMPUTED_STYLE::inherit_font_size() const
 {
     return std::to_string(font_size);
 }
 
-std::string ComputedStyle::inherit_font_weight() const
+/**
+ * \brief Returns the inherited font-weight value as a string.
+ *
+ * Converts the font_weight member (QFont::Weight enum) to its numeric
+ * CSS representation for inheritance to child elements.
+ *
+ * \return The font weight as a string (e.g., "700" for bold, "400" for normal).
+ */
+std::string COMPUTED_STYLE::inherit_font_weight() const
 {
     int weight = font_weight;
     if (weight >= 100)
@@ -665,34 +730,64 @@ std::string ComputedStyle::inherit_font_weight() const
     }
 }
 
-std::string ComputedStyle::inherit_font_style() const
+/**
+ * \brief Returns the inherited font-style value as a string.
+ *
+ * Returns the font_style member for inheritance to child elements.
+ *
+ * \return The font style as a string (e.g., "italic", "normal").
+ */
+std::string COMPUTED_STYLE::inherit_font_style() const
 {
     return font_style;
 }
 
-std::string ComputedStyle::inherit_font_family() const
+/**
+ * \brief Returns the inherited font-family value as a string.
+ *
+ * Converts the font_family member (QString) to std::string for inheritance
+ * to child elements.
+ *
+ * \return The font family as a string.
+ */
+std::string COMPUTED_STYLE::inherit_font_family() const
 {
     return font_family.toStdString();
 }
 
-std::string ComputedStyle::inherit_line_height() const
+/**
+ * \brief Returns the inherited line-height value as a string.
+ *
+ * Returns the line_height member for inheritance to child elements.
+ *
+ * \return The line height as a string.
+ */
+std::string COMPUTED_STYLE::inherit_line_height() const
 {
     return std::to_string(line_height);
 }
 
-std::string ComputedStyle::inherit_text_align() const
+/**
+ * \brief Returns the inherited text-align value as a string.
+ *
+ * Converts the text_align member (TextAlign enum) to its CSS string
+ * representation for inheritance to child elements.
+ *
+ * \return The text alignment as a string (e.g., "left", "center", "right", "justify").
+ */
+std::string COMPUTED_STYLE::inherit_text_align() const
 {
-    if (text_align == TextAlign::Center)
+    if (text_align == TEXT_ALIGN::Center)
     {
         return "center";
     }
 
-    else if (text_align == TextAlign::Justify)
+    else if (text_align == TEXT_ALIGN::Justify)
     {
         return "justify";
     }
 
-    else if (text_align == TextAlign::Right)
+    else if (text_align == TEXT_ALIGN::Right)
     {
         return "right";
     }
@@ -703,7 +798,15 @@ std::string ComputedStyle::inherit_text_align() const
     }
 }
 
-std::string ComputedStyle::inherit_visibility() const
+/**
+ * \brief Returns the inherited visibility value as a string.
+ *
+ * Converts the visibility boolean member to its CSS string representation
+ * for inheritance to child elements.
+ *
+ * \return The visibility as a string ("visible" or "hidden").
+ */
+std::string COMPUTED_STYLE::inherit_visibility() const
 {
     if (!visibility)
     {
@@ -715,15 +818,23 @@ std::string ComputedStyle::inherit_visibility() const
     }
 }
 
-std::string ComputedStyle::inherit_text_decoration() const
+/**
+ * \brief Returns the inherited text-decoration value as a string.
+ *
+ * Converts the text_decoration member (TextDecoration enum) to its CSS string
+ * representation for inheritance to child elements.
+ *
+ * \return The text decoration as a string (e.g., "none", "underline", "line-through", "overline").
+ */
+std::string COMPUTED_STYLE::inherit_text_decoration() const
 {
     switch (text_decoration)
     {
-    case TextDecoration::UnderLine:
+    case TEXT_DECORATION::UnderLine:
         return "underline";
-    case TextDecoration::LineThrough:
+    case TEXT_DECORATION::LineThrough:
         return "line-through";
-    case TextDecoration::OverLine:
+    case TEXT_DECORATION::OverLine:
         return "overline";
     default:
         return "none";

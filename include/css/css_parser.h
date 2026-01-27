@@ -5,8 +5,8 @@
 #include "css/cssom.h"
 #include "util_functions.h"
 
-std::string extract_stylesheets(std::shared_ptr<Node> dom);
+std::string extract_stylesheets(std::shared_ptr<NODE> dom);
 std::unordered_map<std::string, std::string> parse_inline_style(std::string_view style_string);
 
-std::vector<CssRule> parse_css(const std::string& css);
+std::vector<CSS_RULE> parse_css(const std::string& css);
 CSSOM create_cssom(const std::string& css);

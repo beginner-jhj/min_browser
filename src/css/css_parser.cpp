@@ -5,6 +5,16 @@
 #include <queue>
 #include <QDebug>
 
+/**
+ * \brief Parses inline CSS style attributes into a property-value map.
+ *
+ * Parses a CSS style string (e.g., "color: red; font-size: 14px") into individual
+ * property-value pairs. Handles parentheses in values (e.g., rgb() functions),
+ * quoted strings, and case normalization. Trims whitespace from values.
+ *
+ * \param style_string The inline style attribute value to parse.
+ * \return An unordered_map of CSS property names to their values.
+ */
 std::unordered_map<std::string, std::string> parse_inline_style(std::string_view style_string)
 {
     std::unordered_map<std::string, std::string> result;
@@ -76,10 +86,19 @@ std::unordered_map<std::string, std::string> parse_inline_style(std::string_view
     return result;
 }
 
-std::string extract_stylesheets(std::shared_ptr<Node> dom)
+/**
+ * \brief Extracts CSS stylesheets from <style> tags in the DOM.
+ *
+ * Performs a breadth-first traversal of the DOM tree to find all <style> elements
+ * and concatenates their text content into a single CSS string for parsing.
+ *
+ * \param dom The root Node of the DOM tree to search.
+ * \return A concatenated string of all CSS content from <style> tags.
+ */
+std::string extract_stylesheets(std::shared_ptr<NODE> dom)
 {
     std::string css;
-    std::queue<std::shared_ptr<Node>> q;
+    std::queue<std::shared_ptr<NODE>> q;
 
     q.push(dom);
 
@@ -109,6 +128,15 @@ std::string extract_stylesheets(std::shared_ptr<Node> dom)
     return css;
 }
 
+/**
+ * \brief Creates a CSSOM (CSS Object Model) from parsed CSS rules.
+ *
+ * Parses a CSS string and creates a CSSOM object containing all CSS rules
+ * for later matching against DOM nodes.
+ *
+ * \param css The CSS text to parse.
+ * \return A CSSOM object containing the parsed CSS rules.
+ */
 CSSOM create_cssom(const std::string &css)
 {
     CSSOM cssom;
@@ -119,12 +147,22 @@ CSSOM create_cssom(const std::string &css)
     return cssom;
 }
 
-std::vector<CssRule> parse_css(const std::string &css)
+/**
+ * \brief Parses CSS source text into an array of CSS rules.
+ *
+ * Tokenizes and parses a complete CSS stylesheet, handling comment removal
+ * and rule/declaration parsing. Extracts selectors and their corresponding
+ * declarations, building CSS_RULE objects for each rule block.
+ *
+ * \param css The CSS source code to parse.
+ * \return A vector of CSS_RULE objects representing all parsed CSS rules.
+ */
+std::vector<CSS_RULE> parse_css(const std::string &css)
 {
     size_t pos = 0;
     std::string selector;
     std::unordered_map<std::string, std::string> style;
-    std::vector<CssRule> result;
+    std::vector<CSS_RULE> result;
     while (pos < css.size())
     {
         skip_space(pos, css);
@@ -162,7 +200,7 @@ std::vector<CssRule> parse_css(const std::string &css)
             selector = css.substr(pos, block_start_pos - pos);
             trim(selector);
             style = parse_inline_style(css.substr(block_start_pos + 1, block_end_pos - block_start_pos - 1));
-            CssRule rule(selector);
+            CSS_RULE rule(selector);
             for (const auto &[property, value] : style)
             {
                 rule.declarations.push_back({property, value});

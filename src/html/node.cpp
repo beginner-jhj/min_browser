@@ -1,6 +1,15 @@
 #include "html/node.h"
 
-Node::Node(NODE_TYPE t, const std::string &content) : m_type(t)
+/**
+ * \brief Constructs a DOM Node with type and content.
+ *
+ * Creates either an ELEMENT node with a tag name or a TEXT node with text content.
+ * The constructor determines the node type and stores the appropriate value.
+ *
+ * \param t The node type (ELEMENT or TEXT).
+ * \param content The tag name (if ELEMENT) or text content (if TEXT).
+ */
+NODE::NODE(NODE_TYPE t, const std::string &content) : m_type(t)
 {
     if (t == NODE_TYPE::ELEMENT)
     {
@@ -14,29 +23,61 @@ Node::Node(NODE_TYPE t, const std::string &content) : m_type(t)
     }
 }
 
-void Node::add_child(std::shared_ptr<Node> child)
+/**
+ * \brief Adds a child node and establishes parent-child relationship.
+ *
+ * Appends a child node to this node's children list and sets this node
+ * as the child's parent, establishing bidirectional DOM tree relationships.
+ *
+ * \param child The child Node to add.
+ */
+void NODE::add_child(std::shared_ptr<NODE> child)
 {
     m_children.push_back(child);
 
     child->set_parent(shared_from_this());
 }
 
-const std::string Node::get_tag_name() const
+/**
+ * \brief Returns the tag name of an ELEMENT node.
+ *
+ * \return The tag name string (e.g., "div", "p", "a"). Empty string for TEXT nodes.
+ */
+const std::string NODE::get_tag_name() const
 {
     return m_tag_name;
 }
 
-const std::string Node::get_text_content() const
+/**
+ * \brief Returns the text content of a TEXT node.
+ *
+ * \return The text string for TEXT nodes. Empty string for ELEMENT nodes.
+ */
+const std::string NODE::get_text_content() const
 {
     return m_text;
 }
 
-const NODE_TYPE Node::get_type() const
+/**
+ * \brief Returns the type of this node.
+ *
+ * \return The NODE_TYPE (ELEMENT or TEXT).
+ */
+const NODE_TYPE NODE::get_type() const
 {
     return m_type;
 }
 
-const DISPLAY_TYPE Node::get_display_type() const
+/**
+ * \brief Returns the default display type for this node based on tag name.
+ *
+ * Uses the HTML tag name to determine default CSS display property.
+ * TEXT nodes are always INLINE. Common block elements like div, p, h1-h6
+ * return BLOCK. Other elements return INLINE.
+ *
+ * \return The DISPLAY_TYPE (BLOCK, INLINE, or NONE).
+ */
+const DISPLAY_TYPE NODE::get_display_type() const
 {
     if (m_type == NODE_TYPE::TEXT)
     {
@@ -59,12 +100,26 @@ const DISPLAY_TYPE Node::get_display_type() const
     return DISPLAY_TYPE::INLINE;
 }
 
-const std::vector<std::shared_ptr<Node>> &Node::get_children() const
+/**
+ * \brief Returns the vector of child nodes.
+ *
+ * \return A const reference to the vector of children.
+ */
+const std::vector<std::shared_ptr<NODE>> &NODE::get_children() const
 {
     return m_children;
 }
 
-void Node::set_attribute(const std::string &name, const std::string &value)
+/**
+ * \brief Sets an HTML attribute on this node.
+ *
+ * Stores a name-value pair in the attributes map if both are non-empty.
+ * Used for attributes like class, id, href, src, etc.
+ *
+ * \param name The attribute name.
+ * \param value The attribute value.
+ */
+void NODE::set_attribute(const std::string &name, const std::string &value)
 {
     if (!name.empty() && !value.empty())
     {
@@ -72,7 +127,16 @@ void Node::set_attribute(const std::string &name, const std::string &value)
     }
 }
 
-std::string Node::get_attribute(const std::string &name) const
+/**
+ * \brief Retrieves an HTML attribute value by name.
+ *
+ * Looks up an attribute in the attributes map. Returns empty string if
+ * the attribute doesn't exist.
+ *
+ * \param name The attribute name to retrieve.
+ * \return The attribute value, or empty string if not found.
+ */
+std::string NODE::get_attribute(const std::string &name) const
 {
     try
     {
@@ -84,7 +148,16 @@ std::string Node::get_attribute(const std::string &name) const
     }
 }
 
-void Node::set_style(const std::string &name, const std::string &value)
+/**
+ * \brief Sets a CSS style property on this node.
+ *
+ * Uses the COMPUTED_STYLE setters map to parse and apply a CSS property value.
+ * Silently ignores unknown properties.
+ *
+ * \param name The CSS property name (e.g., "color", "font-size").
+ * \param value The CSS property value (e.g., "red", "14px").
+ */
+void NODE::set_style(const std::string &name, const std::string &value)
 {
     if (m_computed_style.setters.count(name))
     {
@@ -92,16 +165,37 @@ void Node::set_style(const std::string &name, const std::string &value)
     }
 }
 
-ComputedStyle Node::get_all_styles() const
+/**
+ * \brief Returns all computed styles for this node.
+ *
+ * \return A COMPUTED_STYLE object containing all CSS properties and their values.
+ */
+COMPUTED_STYLE NODE::get_all_styles() const
 {
     return m_computed_style;
 }
 
-void Node::set_parent(std::weak_ptr<Node> parent)
+/**
+ * \brief Sets the parent node reference.
+ *
+ * Stores a weak pointer to the parent node to avoid circular references
+ * and prevent memory leaks in the DOM tree.
+ *
+ * \param parent A weak pointer to the parent Node.
+ */
+void NODE::set_parent(std::weak_ptr<NODE> parent)
 {
     m_parent = parent;
 }
 
-std::shared_ptr<Node> Node::get_parent() const {
+/**
+ * \brief Retrieves the parent node.
+ *
+ * Locks the weak pointer to the parent and returns a shared pointer.
+ * Returns nullptr if the parent has been destroyed.
+ *
+ * \return A shared pointer to the parent Node, or nullptr if none exists.
+ */
+std::shared_ptr<NODE> NODE::get_parent() const {
     return m_parent.lock();
 }

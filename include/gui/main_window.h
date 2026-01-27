@@ -88,7 +88,7 @@ private:
     QNetworkAccessManager *m_network_manager;
     IMAGE_CACHE_MANAGER m_image_cache_manager;
     QTimer *m_reflow_timer;
-    std::shared_ptr<Node> m_cached_tree;
+    std::shared_ptr<NODE> m_cached_tree;
     QString m_cached_base_url;
 
     void set_connections();
@@ -103,5 +103,5 @@ public slots:
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    std::shared_ptr<Node> create_tree(const std::string &html);
+    std::shared_ptr<NODE> create_tree(const std::string &html);
 };

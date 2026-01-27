@@ -6,18 +6,18 @@
 
 class CSSOM{
     private:
-        std::vector<CssRule> m_rules;
+        std::vector<CSS_RULE> m_rules;
 
-        bool matches(const std::string& selector, std::shared_ptr<Node> node);
+        bool matches(const std::string& selector, std::shared_ptr<NODE> node);
 
     public:
-        void add_rule(CssRule rule){
+        void add_rule(CSS_RULE rule){
             m_rules.push_back(rule);
         }
 
-        std::vector<CssRule> get_rules() const {
+        std::vector<CSS_RULE> get_rules() const {
             return m_rules;
         }
 
-        std::vector<CssRule> matching_rules(std::shared_ptr<Node> node);
+        std::vector<CSS_RULE> matching_rules(std::shared_ptr<NODE> node);
 };

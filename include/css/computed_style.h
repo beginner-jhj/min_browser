@@ -5,12 +5,12 @@
 #include <functional>
 #include <unordered_map>
 
-enum class BoxSizing
+enum class BOX_SIZING
 {
     ContentBox,
     BorderBox
 };
-enum class TextAlign
+enum class TEXT_ALIGN
 {
     Left,
     Center,
@@ -25,7 +25,7 @@ enum class DISPLAY_TYPE
     NONE
 };
 
-enum class TextDecoration
+enum class TEXT_DECORATION
 {
     None,
     UnderLine,
@@ -33,7 +33,7 @@ enum class TextDecoration
     OverLine
 };
 
-enum class PositionType
+enum class POSITION_TYPE
 {
     Static,
     Relative,
@@ -41,7 +41,7 @@ enum class PositionType
     Fixed
 };
 
-struct ComputedStyle
+struct COMPUTED_STYLE
 {
     QColor color = QColor("#000000");          // default: black
     int font_size = 16;                        // default: 16px
@@ -71,14 +71,14 @@ struct ComputedStyle
     std::string border{};
 
     DISPLAY_TYPE display = DISPLAY_TYPE::INLINE;
-    BoxSizing box_sizing = BoxSizing::ContentBox;
-    TextAlign text_align = TextAlign::Left;
-    TextDecoration text_decoration = TextDecoration::None;
+    BOX_SIZING box_sizing = BOX_SIZING::ContentBox;
+    TEXT_ALIGN text_align = TEXT_ALIGN::Left;
+    TEXT_DECORATION text_decoration = TEXT_DECORATION::None;
 
     float line_height = font_size * 1.5;
     float opacity = 1;
 
-    PositionType position = PositionType::Static;
+    POSITION_TYPE position = POSITION_TYPE::Static;
     float top = 0.0;
     bool is_top_set = false;
     float right = 0.0;
@@ -107,7 +107,7 @@ struct ComputedStyle
         return QFontMetrics(to_font());
     }
 
-    using Setter = std::function<void(ComputedStyle &, const std::string &)>;
+    using Setter = std::function<void(COMPUTED_STYLE &, const std::string &)>;
     static std::unordered_map<std::string, Setter> setters;
 
     static QColor parse_color(const std::string &color_value);

@@ -3,16 +3,27 @@
 #include <queue>
 #include <util.h>
 
-void apply_style(std::shared_ptr<Node> node, CSSOM &cssom) {
+/**
+ * \brief Applies CSS styles to a DOM tree using cascade and inheritance.
+ *
+ * Performs a breadth-first traversal of the DOM tree, applying CSS rules from the CSSOM
+ * and inline styles to each node. Handles style inheritance from parent to child nodes,
+ * initializing inherited properties for all elements. Processes author styles on top of
+ * default inherited values.
+ *
+ * \param node The root Node of the DOM tree to style.
+ * \param cssom The CSSOM (CSS Object Model) containing parsed CSS rules and selectors.
+ */
+void apply_style(std::shared_ptr<NODE> node, CSSOM &cssom) {
     static bool setters_initialized = false;
     if (!setters_initialized) {
-        ComputedStyle::init_setters();
+        COMPUTED_STYLE::init_setters();
         setters_initialized = true;
     }
     
-    std::queue<std::pair<std::shared_ptr<Node>, ComputedStyle>> q;
+    std::queue<std::pair<std::shared_ptr<NODE>, COMPUTED_STYLE>> q;
     
-    ComputedStyle root_style; 
+    COMPUTED_STYLE root_style; 
     q.push({node, root_style});
     
     while (!q.empty()) {
@@ -43,7 +54,7 @@ void apply_style(std::shared_ptr<Node> node, CSSOM &cssom) {
             current_node->set_style(property, value);
         }
         
-        ComputedStyle current_style = current_node->get_all_styles();
+        COMPUTED_STYLE current_style = current_node->get_all_styles();
         
         for (auto child : current_node->get_children()) {
             q.push({child, current_style});

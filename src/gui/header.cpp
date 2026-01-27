@@ -2,12 +2,28 @@
 #include <QHBoxLayout>
 #include <QFileDialog>
 
+/**
+ * \brief Constructs a Header widget with navigation and URL input controls.
+ *
+ * Initializes a Header widget containing back/forward buttons, file opener,
+ * URL dropdown, and action buttons. Sets up the UI layout and signal connections
+ * for user interactions.
+ *
+ * \param parent The parent QWidget for ownership and memory management.
+ */
 Header::Header(QWidget *parent) : QWidget(parent), m_back_button(nullptr),m_forward_button(nullptr),m_file_open_button(nullptr), m_url_dropdown(nullptr), m_go_button(nullptr), m_reset_button(nullptr)
 {
     draw();
     set_connections();
 }
 
+/**
+ * \brief Builds and displays the header widget UI layout.
+ *
+ * Creates the horizontal layout with back/forward navigation buttons, file opener button,
+ * URL dropdown with preset URLs, go button, and reset button. Sets appropriate sizes
+ * and stretch factors for responsive layout.
+ */
 void Header::draw()
 {
     QHBoxLayout *header_box = new QHBoxLayout(this);
@@ -36,6 +52,13 @@ void Header::draw()
     header_box->addWidget(m_reset_button,1);
 }
 
+/**
+ * \brief Establishes signal-slot connections for header widget interactions.
+ *
+ * Connects all header buttons and controls to their respective signals.
+ * File button opens a file dialog, URL dropdown stores selection, go button
+ * emits URL navigation, and navigation buttons emit history signals.
+ */
 void Header::set_connections(){
     connect(m_file_open_button, &QPushButton::clicked, this, [this](){
     QString file_path = QFileDialog::getOpenFileName(this,"Select a html file.","","Web Files (*.html *.css);;All Files (*.*)");

@@ -7,13 +7,31 @@
 #include <queue>
 #include "util_functions.h"
 
+/**
+ * \brief Constructs a Renderer widget for displaying web content.
+ *
+ * Initializes the renderer with empty state, ready to receive and display
+ * HTML documents. Sets up internal state for layout, history, and rendering.
+ *
+ * \param parent The parent QWidget for ownership.
+ */
 Renderer::Renderer(QWidget *parent) : QWidget(parent), m_root(nullptr), m_viewport_height(0), m_viewport_width(0), m_image_cache_manager(nullptr), m_current_history_it(m_history_list.begin())
 {
 }
 
-float calculate_content_width(const LayoutBox &box);
+float calculate_content_width(const LAYOUT_BOX &box);
 
-void Renderer::set_document(std::shared_ptr<Node> root, IMAGE_CACHE_MANAGER &image_cache_manager, const QString &base_url)
+/**
+ * \brief Sets a new HTML document for rendering and updates history.
+ *
+ * Stores the document in browser history and triggers rendering with styling
+ * and layout calculation. Clears forward history when a new page is loaded.
+ *
+ * \param root The root Node of the DOM tree to render.
+ * \param image_cache_manager Reference to the image cache manager.
+ * \param base_url The base URL for resolving relative resources (default is empty).
+ */
+void Renderer::set_document(std::shared_ptr<NODE> root, IMAGE_CACHE_MANAGER &image_cache_manager, const QString &base_url)
 {
     m_image_cache_manager = &image_cache_manager;
 
@@ -33,7 +51,17 @@ void Renderer::set_document(std::shared_ptr<Node> root, IMAGE_CACHE_MANAGER &ima
     render(root, base_url);
 }
 
-void Renderer::render(std::shared_ptr<Node> root, const QString &base_url)
+/**
+ * \brief Renders a DOM tree by applying styles, creating layouts, and scheduling paint.
+ *
+ * Applies user agent and author CSS, creates a layout tree with calculated positions
+ * and dimensions, and triggers a repaint. Handles display properties, spacing, and
+ * text layout.
+ *
+ * \param root The root Node of the DOM tree to render.
+ * \param base_url The base URL for resolving relative resources.
+ */
+void Renderer::render(std::shared_ptr<NODE> root, const QString &base_url)
 {
     m_root = root;
     m_base_url = base_url;
@@ -47,7 +75,7 @@ void Renderer::render(std::shared_ptr<Node> root, const QString &base_url)
     /* Block elements */
     html, body, div, p, h1, h2, h3, h4, h5, h6, ul, ol, li, footer, header, section { 
         display: block; 
-    }
+    }   
     
     /* Default spacing for the page */
     body { 
@@ -86,6 +114,14 @@ void Renderer::render(std::shared_ptr<Node> root, const QString &base_url)
     update();
 }
 
+/**
+ * \brief Handles window resize events and recalculates layout if needed.
+ *
+ * Detects width changes and triggers layout recalculation to reflow content.
+ * Passes the event to the base class for further processing.
+ *
+ * \param event The resize event information.
+ */
 void Renderer::resizeEvent(QResizeEvent *event)
 {
     if (m_root && event->oldSize().width() != event->size().width())
@@ -96,6 +132,13 @@ void Renderer::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
 }
 
+/**
+ * \brief Recalculates the layout tree based on current viewport dimensions.
+ *
+ * Creates a fresh layout tree with the current widget width, calculating all
+ * box positions and dimensions. Updates the widget's size hint to accommodate
+ * the rendered content.
+ */
 void Renderer::recalculate_layout()
 {
     if (!m_root)
@@ -111,7 +154,7 @@ void Renderer::recalculate_layout()
             current_width = 1000;
     }
 
-    LineState line(current_width);
+    LINE_STATE line(current_width);
 
     m_layout_tree = create_layout_tree(m_root, current_width, line, m_base_url, m_image_cache_manager);
     m_has_layout = true;
@@ -123,6 +166,15 @@ void Renderer::recalculate_layout()
 
     this->setMinimumSize(min_width, final_height);
 }
+
+/**
+ * \brief Paints the rendered layout tree onto the widget surface.
+ *
+ * Fills the background with white and recursively paints all layout boxes,
+ * including text, images, backgrounds, and borders using QPainter.
+ *
+ * \param event The paint event information (unused, uses full widget rect).
+ */
 void Renderer::paintEvent(QPaintEvent *event)
 {
     if (!m_root)
@@ -138,7 +190,20 @@ void Renderer::paintEvent(QPaintEvent *event)
     paint_layout(painter, m_layout_tree, 0, 0);
 }
 
-void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offset_x, float offset_y, const LayoutBox *parent_box)
+/**
+ * \brief Recursively paints a layout box and its children.
+ *
+ * Draws background colors, borders, images, text, and text decorations.
+ * Handles relative positioning adjustments and opacity changes. Recursively
+ * paints child boxes and absolutely/fixed positioned children.
+ *
+ * \param painter The QPainter to draw with.
+ * \param box The layout box to paint.
+ * \param offset_x The x-offset of the parent in viewport coordinates.
+ * \param offset_y The y-offset of the parent in viewport coordinates.
+ * \param parent_box Optional parent box for text alignment calculations.
+ */
+void Renderer::paint_layout(QPainter &painter, const LAYOUT_BOX &box, float offset_x, float offset_y, const LAYOUT_BOX *parent_box)
 {
     float abs_x = offset_x + box.x;
     float abs_y = offset_y + box.y;
@@ -146,7 +211,7 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
     float previous_opacity = painter.opacity();
     painter.setOpacity(previous_opacity * box.style.opacity);
 
-    if (box.style.position == PositionType::Relative)
+    if (box.style.position == POSITION_TYPE::Relative)
     {
         abs_x += box.style.left - box.style.right;
         abs_y += box.style.top - box.style.bottom;
@@ -199,12 +264,12 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
                 total_width += word_box.width;
             }
 
-            if (parent_box->style.text_align == TextAlign::Center)
+            if (parent_box->style.text_align == TEXT_ALIGN::Center)
             {
                 offset_adjust = (parent_box->width - total_width) / 2;
             }
 
-            else if (parent_box->style.text_align == TextAlign::Right)
+            else if (parent_box->style.text_align == TEXT_ALIGN::Right)
             {
                 offset_adjust = parent_box->width - total_width;
             }
@@ -224,7 +289,7 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
 
             painter.drawText(word_abs_x, baseline_y, QString::fromStdString(word_box.text));
 
-            if (word_box.style.text_decoration != TextDecoration::None)
+            if (word_box.style.text_decoration != TEXT_DECORATION::None)
             {
                 QPen decoration_pen(box.style.color);
 
@@ -235,11 +300,11 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
 
                 switch (box.style.text_decoration)
                 {
-                case TextDecoration::UnderLine:
+                case TEXT_DECORATION::UnderLine:
                     decoration_y = baseline_y + 1;
                     break;
 
-                case TextDecoration::LineThrough:
+                case TEXT_DECORATION::LineThrough:
                     decoration_y = word_abs_y + metrics.ascent() / 2;
                     break;
 
@@ -264,7 +329,7 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
 
     for (const auto &abs_child : box.absolute_children)
     {
-        if (abs_child.style.position == PositionType::Fixed)
+        if (abs_child.style.position == POSITION_TYPE::Fixed)
         {
             paint_fixed(painter, abs_child);
         }
@@ -276,7 +341,16 @@ void Renderer::paint_layout(QPainter &painter, const LayoutBox &box, float offse
     }
 }
 
-void Renderer::paint_fixed(QPainter &painter, const LayoutBox &box)
+/**
+ * \brief Paints a fixed-position layout box adjusted for scroll position.
+ *
+ * Calculates the screen position of a fixed element, accounting for scroll
+ * offset and CSS positioning properties (top, right, bottom, left).
+ *
+ * \param painter The QPainter to draw with.
+ * \param box The fixed-position layout box to paint.
+ */
+void Renderer::paint_fixed(QPainter &painter, const LAYOUT_BOX &box)
 {
     // QScrollArea -> ViewPort(hidden) -> renderer
     QScrollArea *scroll_area = qobject_cast<QScrollArea *>(parentWidget()->parentWidget());
@@ -348,11 +422,20 @@ void Renderer::paint_fixed(QPainter &painter, const LayoutBox &box)
     painter.setOpacity(previous_opacity);
 }
 
-float calculate_content_width(const LayoutBox &root)
+/**
+ * \brief Calculates the total horizontal content width of a layout tree.
+ *
+ * Traverses the layout tree to find the rightmost extent of all boxes,
+ * accounting for their absolute positions. Returns the maximum right edge.
+ *
+ * \param root The root layout box to measure.
+ * \return The total content width in pixels.
+ */
+float calculate_content_width(const LAYOUT_BOX &root)
 {
     float max_right = root.x + root.width;
 
-    std::queue<std::pair<LayoutBox, float>> q;
+    std::queue<std::pair<LAYOUT_BOX, float>> q;
     q.push({root, 0.0f});
 
     while (!q.empty())
@@ -377,6 +460,15 @@ float calculate_content_width(const LayoutBox &root)
     return max_right - root.x;
 }
 
+/**
+ * \brief Handles mouse press events to detect clicked links.
+ *
+ * Finds the DOM node at the click position and searches up the tree
+ * for an <a> tag with an href attribute. Emits a link_clicked signal
+ * with the resolved absolute URL.
+ *
+ * \param event The mouse event with click position.
+ */
 void Renderer::mousePressEvent(QMouseEvent *event)
 {
     float x = event->pos().x();
@@ -395,17 +487,40 @@ void Renderer::mousePressEvent(QMouseEvent *event)
     }
 }
 
-std::shared_ptr<Node> Renderer::find_node_at(float x, float y)
+/**
+ * \brief Finds the DOM node at a given viewport coordinate.
+ *
+ * Delegates to find_node_in_box with the root layout box and (0,0) offset.
+ *
+ * \param x The x-coordinate in viewport space.
+ * \param y The y-coordinate in viewport space.
+ * \return A shared pointer to the DOM node at the position, or nullptr.
+ */
+std::shared_ptr<NODE> Renderer::find_node_at(float x, float y)
 {
     return find_node_in_box(m_layout_tree, x, y, 0, 0);
 }
 
-std::shared_ptr<Node> Renderer::find_node_in_box(const LayoutBox &box, float x, float y, float offset_x, float offset_y)
+/**
+ * \brief Recursively searches layout boxes to find the node at a coordinate.
+ *
+ * Performs a depth-first search of layout boxes, checking children first
+ * (to handle overlapping elements correctly), then checking if the coordinate
+ * is within the current box's bounds.
+ *
+ * \param box The layout box to search within.
+ * \param x The target x-coordinate.
+ * \param y The target y-coordinate.
+ * \param offset_x The parent's x-offset in viewport space.
+ * \param offset_y The parent's y-offset in viewport space.
+ * \return A shared pointer to the DOM node at the position, or nullptr.
+ */
+std::shared_ptr<NODE> Renderer::find_node_in_box(const LAYOUT_BOX &box, float x, float y, float offset_x, float offset_y)
 {
     float abs_x = offset_x + box.x;
     float abs_y = offset_y + box.y;
 
-    if (box.style.position == PositionType::Relative)
+    if (box.style.position == POSITION_TYPE::Relative)
     {
         abs_x += box.style.left - box.style.right;
         abs_y += box.style.top - box.style.bottom;
@@ -424,7 +539,7 @@ std::shared_ptr<Node> Renderer::find_node_in_box(const LayoutBox &box, float x, 
 
     for (const auto &abs_child : box.absolute_children)
     {
-        if (abs_child.style.position == PositionType::Fixed)
+        if (abs_child.style.position == POSITION_TYPE::Fixed)
         {
             continue;
         }
@@ -453,9 +568,18 @@ std::shared_ptr<Node> Renderer::find_node_in_box(const LayoutBox &box, float x, 
     return nullptr;
 }
 
-std::string Renderer::bubble_for_link(std::shared_ptr<Node> node)
+/**
+ * \brief Searches up the DOM tree for the nearest link anchor element.
+ *
+ * Starting from a given node, bubbles up the DOM tree looking for an <a> tag
+ * with an href attribute. Returns the href value if found, empty string if none.
+ *
+ * \param node The starting DOM node to search from.
+ * \return The href value of the nearest parent <a> tag, or empty string.
+ */
+std::string Renderer::bubble_for_link(std::shared_ptr<NODE> node)
 {
-    std::shared_ptr<Node> current = node;
+    std::shared_ptr<NODE> current = node;
 
     while (current)
     {
@@ -474,6 +598,12 @@ std::string Renderer::bubble_for_link(std::shared_ptr<Node> node)
     return "";
 }
 
+/**
+ * \brief Navigates to the previous page in browser history.
+ *
+ * Moves the history iterator backward and re-renders the previous page
+ * if available.
+ */
 void Renderer::go_back()
 {
     if (m_current_history_it != m_history_list.begin())
@@ -484,6 +614,12 @@ void Renderer::go_back()
     }
 }
 
+/**
+ * \brief Navigates to the next page in browser history.
+ *
+ * Moves the history iterator forward and re-renders the next page
+ * if available.
+ */
 void Renderer::go_forward()
 {
     auto next_it = std::next(m_current_history_it);

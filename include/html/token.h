@@ -6,7 +6,7 @@ enum class TOKEN_TYPE{
     START_TAG,END_TAG,TEXT
 };
 
-struct Token{
+struct TOKEN{
     TOKEN_TYPE type;
     std::string value;
     std::map<std::string, std::string> attributes;

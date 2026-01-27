@@ -8,7 +8,7 @@
 #include <QPixmap>
 #include "gui/image_cache_manager.h"
 
-struct LineState
+struct LINE_STATE
 {
     float current_x = 0;
     float current_y = 0;
@@ -16,30 +16,30 @@ struct LineState
     float max_width = 0;
     float padding_left = 0;
 
-    LineState(float width = 0) : max_width(width) {}
+    LINE_STATE(float width = 0) : max_width(width) {}
 };
 
-struct LayoutBox
+struct LAYOUT_BOX
 {
-    std::shared_ptr<Node> node;
-    ComputedStyle style;
+    std::shared_ptr<NODE> node;
+    COMPUTED_STYLE style;
 
     float x = 0;
     float y = 0;
     float width = 0;
     float height = 0;
 
-    std::vector<LayoutBox> children;
+    std::vector<LAYOUT_BOX> children;
     std::string text;
 
     bool is_positioned = false;
-    std::vector<LayoutBox> absolute_children;
+    std::vector<LAYOUT_BOX> absolute_children;
     QPixmap image;
 };
 
-LayoutBox create_layout_tree(
-    std::shared_ptr<Node> root,
+LAYOUT_BOX create_layout_tree(
+    std::shared_ptr<NODE> root,
     float parent_width,
-    LineState &line,
+    LINE_STATE &line,
     const QString &base_url,
     IMAGE_CACHE_MANAGER *image_cache_manager);

@@ -1,7 +1,17 @@
 #include "html/html_tokenizer.h"
 #include "util_functions.h"
 
-std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
+/**
+ * \brief Parses HTML attribute strings into a name-value map.
+ *
+ * Extracts HTML attributes from a string (e.g., "class=\"button\" id=\"submit\"")
+ * into individual name-value pairs. Expects attributes in the format name="value".
+ * Skips whitespace and stops at the end of the string.
+ *
+ * \param to_parse The attribute string to parse.
+ * \return A map of attribute names to their values.
+ */
+std::map<std::string, std::string> parse_attribute(const std::string &to_parse)
 {
     std::map<std::string, std::string> attrs;
     size_t pos = 0;
@@ -32,9 +42,20 @@ std::map<std::string, std::string> parse_attrubute(const std::string &to_parse)
     return attrs;
 }
 
-std::vector<Token> tokenize(const std::string &html) // todo: ignoring comments.
+/**
+ * \brief Tokenizes HTML source code into a sequence of tokens.
+ *
+ * Parses HTML text into semantic tokens representing start tags, end tags,
+ * and text content. Handles HTML comments, attribute parsing, and whitespace
+ * normalization. Throws an exception on malformed HTML (missing closing >).
+ *
+ * \param html The HTML source code to tokenize.
+ * \return A vector of TOKEN objects representing the tokenized HTML.
+ * \throws std::runtime_error If HTML syntax is invalid (missing tag closure).
+ */
+std::vector<TOKEN> tokenize(const std::string &html) // todo: ignoring comments.
 {
-    std::vector<Token> tokens;
+    std::vector<TOKEN> tokens;
 
     size_t pos = 0;
     while (pos < html.size())
@@ -71,7 +92,7 @@ std::vector<Token> tokenize(const std::string &html) // todo: ignoring comments.
                     {
                         tag_name = full_tag.substr(0, space_pos);
                         std::string attr_string = full_tag.substr(space_pos + 1);
-                        attrs = parse_attrubute(attr_string);
+                        attrs = parse_attribute(attr_string);
                     }
                     else
                     {

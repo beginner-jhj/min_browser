@@ -2,9 +2,19 @@
 #include "util_functions.h"
 #include <algorithm>
 
-std::vector<CssRule> CSSOM::matching_rules(std::shared_ptr<Node> node)
+/**
+ * \brief Finds all CSS rules that match a given DOM node.
+ *
+ * Iterates through all CSS rules in the CSSOM and tests each selector against
+ * the provided node. Handles multiple selectors per rule (comma-separated).
+ * Returns all matching rules in priority order.
+ *
+ * \param node The DOM node to match against CSS selectors.
+ * \return A vector of CSS_RULE objects that match the node.
+ */
+std::vector<CSS_RULE> CSSOM::matching_rules(std::shared_ptr<NODE> node)
 {
-    std::vector<CssRule> matched;
+    std::vector<CSS_RULE> matched;
 
     for (auto &rule : m_rules)
     {
@@ -22,7 +32,18 @@ std::vector<CssRule> CSSOM::matching_rules(std::shared_ptr<Node> node)
     return matched;
 }
 
-bool CSSOM::matches(const std::string &selector, std::shared_ptr<Node> node)
+/**
+ * \brief Tests if a CSS selector matches a DOM node.
+ *
+ * Supports three selector types: element selectors (tag names),
+ * class selectors (dot notation), and ID selectors (hash notation).
+ * Performs case-sensitive matching for element and ID selectors.
+ *
+ * \param selector The CSS selector to test (e.g., "div", ".classname", "#idname").
+ * \param node The DOM node to test against.
+ * \return True if the selector matches the node, false otherwise.
+ */
+bool CSSOM::matches(const std::string &selector, std::shared_ptr<NODE> node)
 {
     
     if (selector[0] == '.')

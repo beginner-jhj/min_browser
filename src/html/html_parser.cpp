@@ -3,39 +3,21 @@
 #include "util_functions.h"
 #include <set>
 
-/*
-"initial" mode - Before anything exists
-
-If you get TEXT → create <html>, switch to "before html"
-
-
-"before html" mode - No <html> yet
-
-If you get TEXT → create <html>, insert it, switch to "before head"
-
-
-"before head" mode - <html> exists but no <head>
-
-If you get TEXT → create <head>, insert it, switch to "in head"
-
-
-"in head" mode - Inside <head>
-
-If you get TEXT that's whitespace → ignore
-If you get TEXT that's not whitespace → pop out of head, create <body>, switch to "in body"
-
-
-"in body" mode - Inside <body>
-
-If you get TEXT → insert it normally
-
-*/
-
-std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
+/**
+ * \brief Parses a sequence of HTML tokens into a DOM tree structure.
+ *
+ * Processes a vector of tokens and builds a hierarchical Node tree representation
+ * of the HTML document. Handles element nesting, text nodes, and void elements
+ * that do not require closing tags.
+ *
+ * \param tokens A vector of TOKEN objects representing the tokenized HTML.
+ * \return A shared pointer to the root Node of the parsed DOM tree.
+ */
+std::shared_ptr<NODE> parse(const std::vector<TOKEN> &tokens)
 {
     std::set<std::string> void_elements = {"meta", "link", "img", "br", "hr", "input"};
-    std::vector<std::shared_ptr<Node>> stack;
-    std::shared_ptr<Node> root = nullptr;
+    std::vector<std::shared_ptr<NODE>> stack;
+    std::shared_ptr<NODE> root = nullptr;
     for (auto &token : tokens)
     {
         if (token.type == TOKEN_TYPE::TEXT)
@@ -51,10 +33,10 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
         }
         if (token.type == TOKEN_TYPE::TEXT && stack.empty())
         {
-            std::shared_ptr<Node> html = std::make_shared<Node>(NODE_TYPE::ELEMENT, "html");
-            std::shared_ptr<Node> body = std::make_shared<Node>(NODE_TYPE::ELEMENT, "body");
+            std::shared_ptr<NODE> html = std::make_shared<NODE>(NODE_TYPE::ELEMENT, "html");
+            std::shared_ptr<NODE> body = std::make_shared<NODE>(NODE_TYPE::ELEMENT, "body");
 
-            std::shared_ptr<Node> text_node = create_node(token);
+            std::shared_ptr<NODE> text_node = create_node(token);
 
             body->add_child(text_node);
             html->add_child(body);
@@ -70,7 +52,7 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
         if (token.type == TOKEN_TYPE::START_TAG)
         {
             bool is_void_token = void_elements.find(token.value) != void_elements.end();
-            std::shared_ptr<Node> new_node = create_node(token);
+            std::shared_ptr<NODE> new_node = create_node(token);
             if (!stack.empty())
             {
                 stack.back()->add_child(new_node);
@@ -89,7 +71,7 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
         {
             if (!stack.empty())
             {
-                std::shared_ptr<Node> parent = stack.back();
+                std::shared_ptr<NODE> parent = stack.back();
                 parent->add_child(create_node(token));
             }
             continue;
@@ -104,14 +86,24 @@ std::shared_ptr<Node> parse(const std::vector<Token> &tokens)
     return root;
 }
 
-std::shared_ptr<Node> create_node(const Token &token)
+/**
+ * \brief Creates a Node object from a TOKEN.
+ *
+ * Converts a single TOKEN into a corresponding Node. For text tokens, creates
+ * a TEXT type node. For element tokens, creates an ELEMENT type node and
+ * populates its attributes from the token's attribute map.
+ *
+ * \param token The TOKEN object to convert into a Node.
+ * \return A shared pointer to the newly created Node.
+ */
+std::shared_ptr<NODE> create_node(const TOKEN &token)
 {
     if (token.type == TOKEN_TYPE::TEXT)
     {
-        return std::make_shared<Node>(NODE_TYPE::TEXT, token.value);
+        return std::make_shared<NODE>(NODE_TYPE::TEXT, token.value);
     }
 
-    auto node = std::make_shared<Node>(NODE_TYPE::ELEMENT, token.value);
+    auto node = std::make_shared<NODE>(NODE_TYPE::ELEMENT, token.value);
 
     if (!token.attributes.empty())
     {

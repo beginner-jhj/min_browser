@@ -6,6 +6,15 @@
 #include <QFile>
 #include <QFileInfo>
 
+/**
+ * \brief Constructs the main browser window with header and renderer.
+ *
+ * Initializes the main application window with a header bar, rendering area,
+ * network manager, image cache manager, and reflow timer. Sets up the central
+ * widget with a vertical layout.
+ *
+ * \param parent The parent QWidget for ownership.
+ */
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_header(nullptr), m_renderer(nullptr)
 {
     m_network_manager = new QNetworkAccessManager(this);
@@ -16,6 +25,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), m_header(nullptr)
     set_connections();
 }
 
+/**
+ * \brief Sets up the main window UI with header and renderer.
+ *
+ * Creates the central widget, vertical layout, header bar, and scrollable
+ * rendering area. Initializes the renderer with default HTML content.
+ */
 void MainWindow::setup_ui()
 {
     setMinimumSize(1000, 800);
@@ -42,13 +57,29 @@ void MainWindow::setup_ui()
     layout->addWidget(rendering_scroll_area, 1);
 }
 
-std::shared_ptr<Node> MainWindow::create_tree(const std::string &html)
+/**
+ * \brief Tokenizes and parses HTML into a DOM tree.
+ *
+ * Converts an HTML string into tokens, then parses the tokens into a
+ * complete DOM tree structure ready for styling and layout.
+ *
+ * \param html The HTML source code to parse.
+ * \return A shared pointer to the root Node of the parsed DOM tree.
+ */
+std::shared_ptr<NODE> MainWindow::create_tree(const std::string &html)
 {
     auto tokens = tokenize(html);
     auto tree = parse(tokens);
     return tree;
 }
 
+/**
+ * \brief Establishes signal-slot connections for the main window.
+ *
+ * Connects header signals to main window slots for navigation, file loading,
+ * URL fetching, image downloading, and DOM reflowing. Handles browser history
+ * navigation (back/forward) and link click events from the renderer.
+ */
 void MainWindow::set_connections()
 {
     connect(m_header, &Header::file_selected, this, &MainWindow::render_file);
@@ -66,6 +97,15 @@ void MainWindow::set_connections()
 
 }
 
+/**
+ * \brief Loads and renders an HTML file from the local filesystem.
+ *
+ * Opens a local HTML file, reads its content, parses it into a DOM tree,
+ * and renders it. Extracts the file's directory as the base URL for relative
+ * resource resolution.
+ *
+ * \param file_path The path to the HTML file to load.
+ */
 void MainWindow::render_file(const QString &file_path)
 {
     if (file_path.isEmpty())
@@ -94,6 +134,15 @@ void MainWindow::render_file(const QString &file_path)
     file.close();
 }
 
+/**
+ * \brief Fetches and renders HTML content from a network URL.
+ *
+ * Makes an asynchronous HTTP/HTTPS request to fetch HTML content from a URL,
+ * parses it into a DOM tree, and renders it. Extracts the base URL from the
+ * request URL for relative resource resolution. Shows error page if the fetch fails.
+ *
+ * \param url The URL to fetch and render.
+ */
 void MainWindow::fetch_url(const QString &url)
 {
     QNetworkRequest request(url);
@@ -123,6 +172,14 @@ void MainWindow::fetch_url(const QString &url)
         reply->deleteLater(); });
 }
 
+/**
+ * \brief Handles completion of image download from the network.
+ *
+ * Caches downloaded images in the image cache manager and triggers a reflow
+ * to update the rendered page with the newly available image.
+ *
+ * \param reply The QNetworkReply containing the downloaded image data.
+ */
 void MainWindow::download_image(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError)
@@ -136,16 +193,36 @@ void MainWindow::download_image(QNetworkReply *reply)
     reply->deleteLater();
 }
 
+/**
+ * \brief Requests a delayed reflow of the rendered document.
+ *
+ * Starts a timer to defer DOM reflowing (layout recalculation) to batch
+ * layout operations and improve performance when multiple updates occur.
+ */
 void MainWindow::request_reflow()
 {
     m_reflow_timer->start(100);
 }
 
+/**
+ * \brief Recalculates the layout and re-renders the current document.
+ *
+ * Triggered by the reflow timer, updates the layout tree to account for
+ * newly loaded images or other changes to the document.
+ */
 void MainWindow::reflow()
 {
     m_renderer->set_document(m_cached_tree, m_image_cache_manager, m_cached_base_url);
 }
 
+/**
+ * \brief Navigates to a URL or file path clicked in the renderer.
+ *
+ * Routes link clicks to appropriate handlers: local file:// URLs are loaded
+ * as files, HTTP/HTTPS URLs are fetched from the network.
+ *
+ * \param link The URL or file path to navigate to.
+ */
 void MainWindow::navigate(const QString &link)
 {
     if (link.startsWith("file://"))

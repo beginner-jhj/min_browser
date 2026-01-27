@@ -1,12 +1,27 @@
 #include "css/layout_tree.h"
 #include "util_functions.h"
 
-LayoutBox create_layout_tree(
-    std::shared_ptr<Node> root,
+/**
+ * \brief Converts a DOM tree into a layout tree with computed positions and dimensions.
+ *
+ * Recursively traverses the DOM tree and creates a parallel layout tree (LAYOUT_BOX structures)
+ * with calculated positions, dimensions, and visual properties. Handles block and inline
+ * layout modes, text wrapping, absolute/fixed positioning, images, and void elements.
+ * Manages line-breaking for inline content and margin/padding calculations.
+ *
+ * \param root The DOM node to layout.
+ * \param parent_width The available width for layout in pixels.
+ * \param line The current line state tracking horizontal and vertical positions.
+ * \param base_url The base URL for resolving relative image and resource URLs.
+ * \param image_cache_manager Pointer to the image cache manager for loading images.
+ * \return A LAYOUT_BOX representing the complete layout of the subtree.
+ */
+LAYOUT_BOX create_layout_tree(
+    std::shared_ptr<NODE> root,
     float parent_width,
-    LineState &line, const QString &base_url, IMAGE_CACHE_MANAGER *image_cache_manager)
+    LINE_STATE &line, const QString &base_url, IMAGE_CACHE_MANAGER *image_cache_manager)
 {
-    LayoutBox box;
+    LAYOUT_BOX box;
     box.node = root;
     box.style = root->get_all_styles();
 
@@ -120,7 +135,7 @@ LayoutBox create_layout_tree(
             box.width = parent_width - box.style.margin_left - box.style.margin_right;
         }
 
-        box.is_positioned = box.style.position != PositionType::Static;
+        box.is_positioned = box.style.position != POSITION_TYPE::Static;
 
         line.current_x = box.style.padding_left;
         line.current_y = box.style.padding_top;
@@ -135,9 +150,9 @@ LayoutBox create_layout_tree(
             float child_parent_width = box.width -
                                        box.style.padding_left -
                                        box.style.padding_right;
-            LayoutBox child_box = create_layout_tree(child, child_parent_width, line, base_url, image_cache_manager);
+            LAYOUT_BOX child_box = create_layout_tree(child, child_parent_width, line, base_url, image_cache_manager);
 
-            if (child_box.style.position == PositionType::Absolute)
+            if (child_box.style.position == POSITION_TYPE::Absolute)
             {
                 if (child_box.style.width > 0)
                 {
@@ -155,7 +170,7 @@ LayoutBox create_layout_tree(
                 continue;
             }
 
-            else if (child_box.style.position == PositionType::Fixed)
+            else if (child_box.style.position == POSITION_TYPE::Fixed)
             {
                 if (child_box.style.width > 0)
                 {
@@ -229,7 +244,7 @@ LayoutBox create_layout_tree(
                 line.line_height = 0;
             }
 
-            LayoutBox word_box;
+            LAYOUT_BOX word_box;
             word_box.node = root;
             word_box.text = word;
             word_box.style = box.style;
@@ -271,7 +286,7 @@ LayoutBox create_layout_tree(
         // Step 2: Process children (text, nested inlines, etc.)
         for (auto child : root->get_children())
         {
-            LayoutBox child_box = create_layout_tree(child, parent_width, line, base_url, image_cache_manager);
+            LAYOUT_BOX child_box = create_layout_tree(child, parent_width, line, base_url, image_cache_manager);
             box.children.push_back(child_box);
         }
 
