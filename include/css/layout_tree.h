@@ -37,6 +37,32 @@ struct LAYOUT_BOX
     QPixmap image;
 };
 
+// Helper functions for create_layout_tree
+LAYOUT_BOX layout_image_element(
+    std::shared_ptr<NODE> node,
+    const QString &base_url,
+    IMAGE_CACHE_MANAGER *image_cache_manager,
+    LINE_STATE &line);
+
+LAYOUT_BOX layout_block_element(
+    std::shared_ptr<NODE> root,
+    float parent_width,
+    LINE_STATE &line,
+    const QString &base_url,
+    IMAGE_CACHE_MANAGER *image_cache_manager);
+
+LAYOUT_BOX layout_text_element(
+    std::shared_ptr<NODE> root,
+    const COMPUTED_STYLE &style,
+    LINE_STATE &line);
+
+LAYOUT_BOX layout_inline_element(
+    std::shared_ptr<NODE> root,
+    float parent_width,
+    LINE_STATE &line,
+    const QString &base_url,
+    IMAGE_CACHE_MANAGER *image_cache_manager);
+
 LAYOUT_BOX create_layout_tree(
     std::shared_ptr<NODE> root,
     float parent_width,
